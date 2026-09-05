@@ -1,0 +1,54 @@
+---
+---
+
+<button
+  id="theme-toggle"
+  type="button"
+  class="px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-ctp-surface0 text-ctp-text hover:bg-ctp-surface1 border border-ctp-surface2 shadow-sm flex items-center gap-2 cursor-pointer"
+  aria-label="Toggle Catppuccin Theme"
+>
+  <span id="theme-toggle-light-icon" class="hidden">
+    ☀️ <span class="font-semibold">Catppuccin Latte (Light)</span>
+  </span>
+  <span id="theme-toggle-dark-icon" class="hidden">
+    🌙 <span class="font-semibold">Catppuccin Macchiato (Dark)</span>
+  </span>
+</button>
+
+<script>
+  function updateThemeUI() {
+    const isLatte = document.documentElement.classList.contains('latte');
+    const lightIcon = document.getElementById('theme-toggle-light-icon');
+    const darkIcon = document.getElementById('theme-toggle-dark-icon');
+    
+    if (isLatte) {
+      lightIcon?.classList.remove('hidden');
+      darkIcon?.classList.add('hidden');
+    } else {
+      lightIcon?.classList.add('hidden');
+      darkIcon?.classList.remove('hidden');
+    }
+  }
+
+  function setupThemeToggle() {
+    const button = document.getElementById('theme-toggle');
+    updateThemeUI();
+
+    button?.addEventListener('click', () => {
+      const isLatte = document.documentElement.classList.contains('latte');
+      if (isLatte) {
+        document.documentElement.classList.remove('latte');
+        document.documentElement.classList.add('dark', 'macchiato');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark', 'macchiato');
+        document.documentElement.classList.add('latte');
+        localStorage.setItem('theme', 'latte');
+      }
+      updateThemeUI();
+    });
+  }
+
+  setupThemeToggle();
+  document.addEventListener('astro:after-swap', setupThemeToggle);
+</script>
