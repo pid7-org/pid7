@@ -1,5 +1,10 @@
+@import "@fontsource/playwrite-de-sas/index.css";
 @import "tailwindcss";
 @import "@catppuccin/tailwindcss/macchiato.css";
+
+@theme {
+  --font-playwrite: "Playwrite DE SAS", cursive, sans-serif;
+}
 
 @layer base {
   :root {
