@@ -1,41 +1,82 @@
 ---
 ---
 
-<button
-  id="theme-toggle"
-  type="button"
-  class="rounded-full border border-ctp-surface1 px-3 py-1.5 text-xs text-ctp-subtext0 hover:text-ctp-text hover:border-ctp-surface2 bg-ctp-mantle/50 transition-colors flex items-center gap-1.5 cursor-pointer"
-  aria-label="Toggle Catppuccin Theme"
-  title="Toggle Theme"
->
-  <span id="theme-toggle-light-icon" class="hidden flex items-center gap-1.5">
-    ☀️ <span class="font-mono text-xs">Latte</span>
-  </span>
-  <span id="theme-toggle-dark-icon" class="hidden flex items-center gap-1.5">
-    🌙 <span class="font-mono text-xs">Macchiato</span>
-  </span>
-</button>
+<div class="flex items-center gap-2">
+  <!-- Accent Color Circle Button -->
+  <button
+    id="accent-toggle"
+    type="button"
+    class="w-4 h-4 rounded-full border border-ctp-text transition-transform duration-200 hover:scale-110 cursor-pointer focus:outline-none shrink-0"
+    aria-label="Cycle Accent Color"
+    title="Change accent color"
+  ></button>
+
+  <!-- Half-filled Circle Theme Toggle Button -->
+  <button
+    id="theme-toggle"
+    type="button"
+    class="w-4 h-4 rounded-full text-ctp-text transition-transform duration-500 ease-in-out hover:rotate-180 cursor-pointer focus:outline-none flex items-center justify-center shrink-0"
+    aria-label="Toggle Theme"
+    title="Toggle light/dark theme"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="w-4 h-4 block"
+    >
+      <circle cx="12" cy="12" r="11" stroke="currentColor" stroke-width="2" fill="none" />
+      <path d="M12 1v22a11 11 0 0 0 0-22z" fill="currentColor" stroke="none" />
+    </svg>
+  </button>
+</div>
 
 <script>
-  function updateThemeUI() {
+  const accents = ['mauve', 'blue', 'green', 'peach'];
+
+  function getStoredAccent(): string {
+    const stored = localStorage.getItem('accent');
+    return stored && accents.includes(stored) ? stored : 'mauve';
+  }
+
+  function applyAccent(accentName: string) {
+    document.documentElement.setAttribute('data-accent', accentName);
+    localStorage.setItem('accent', accentName);
+
     const isLatte = document.documentElement.classList.contains('latte');
-    const lightIcon = document.getElementById('theme-toggle-light-icon');
-    const darkIcon = document.getElementById('theme-toggle-dark-icon');
-    
-    if (isLatte) {
-      lightIcon?.classList.remove('hidden');
-      darkIcon?.classList.add('hidden');
-    } else {
-      lightIcon?.classList.add('hidden');
-      darkIcon?.classList.remove('hidden');
+    const hexMap: Record<string, Record<string, string>> = {
+      dark: { mauve: '#cba6f7', blue: '#89b4fa', green: '#a6e3a1', peach: '#fab387' },
+      latte: { mauve: '#8839ef', blue: '#1e66f5', green: '#40a02b', peach: '#fe640b' }
+    };
+    const currentHexMap = isLatte ? hexMap.latte : hexMap.dark;
+    const hex = currentHexMap[accentName] || currentHexMap.mauve;
+
+    const accentBtn = document.getElementById('accent-toggle');
+    if (accentBtn) {
+      accentBtn.style.backgroundColor = hex;
     }
   }
 
-  function setupThemeToggle() {
-    const button = document.getElementById('theme-toggle');
-    updateThemeUI();
+  function setupControls() {
+    // Accent toggle
+    const currentAccent = getStoredAccent();
+    applyAccent(currentAccent);
 
-    button?.addEventListener('click', () => {
+    const accentBtn = document.getElementById('accent-toggle');
+    accentBtn?.addEventListener('click', () => {
+      const active = getStoredAccent();
+      const nextIndex = (accents.indexOf(active) + 1) % accents.length;
+      const nextAccent = accents[nextIndex];
+      applyAccent(nextAccent);
+    });
+
+    // Theme toggle
+    const themeBtn = document.getElementById('theme-toggle');
+    themeBtn?.addEventListener('click', () => {
       const isLatte = document.documentElement.classList.contains('latte');
       if (isLatte) {
         document.documentElement.classList.remove('latte');
@@ -46,10 +87,10 @@
         document.documentElement.classList.add('latte');
         localStorage.setItem('theme', 'latte');
       }
-      updateThemeUI();
+      applyAccent(getStoredAccent());
     });
   }
 
-  setupThemeToggle();
-  document.addEventListener('astro:after-swap', setupThemeToggle);
+  setupControls();
+  document.addEventListener('astro:after-swap', setupControls);
 </script>

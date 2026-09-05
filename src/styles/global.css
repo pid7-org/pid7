@@ -11,15 +11,28 @@
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
+/* Explicit Catppuccin Accent Colors for Dark (Macchiato) */
+html, html[data-accent="mauve"] { --color-accent: #cba6f7; }
+html[data-accent="blue"] { --color-accent: #89b4fa; }
+html[data-accent="green"] { --color-accent: #a6e3a1; }
+html[data-accent="peach"] { --color-accent: #fab387; }
+
+/* Explicit Catppuccin Accent Colors for Light (Latte) */
+html.latte, html.latte[data-accent="mauve"] { --color-accent: #8839ef; }
+html.latte[data-accent="blue"] { --color-accent: #1e66f5; }
+html.latte[data-accent="green"] { --color-accent: #40a02b; }
+html.latte[data-accent="peach"] { --color-accent: #fe640b; }
+
 @layer base {
   :root {
     color-scheme: dark light;
   }
 
   body {
-    background-color: var(--color-ctp-base);
+    background-color: color-mix(in srgb, var(--color-ctp-base) 85%, var(--color-accent) 15%) !important;
     color: var(--color-ctp-text);
     font-family: var(--font-mono);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   .prose {
