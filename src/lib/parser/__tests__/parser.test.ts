@@ -135,7 +135,7 @@ describe('Custom Markdown Blog Parser Module', () => {
     expect(parsed.frontmatter.tags).toEqual(['Ashwa', 'SIMD', 'Rust', 'Search']);
     expect(parsed.readTimeMinutes).toBeGreaterThan(0);
     expect(parsed.wordCount).toBeGreaterThan(0);
-    expect(parsed.glossary.length).toBe(7);
+    expect(parsed.glossary.length).toBe(11);
     expect(parsed.references.length).toBe(4);
     expect(parsed.html).toContain('custom-code-block-angle');
     expect(parsed.html).toContain('custom-code-block-tilde');
