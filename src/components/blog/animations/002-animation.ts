@@ -5,7 +5,7 @@ export const Animation002 = {
       <div class="blog-animation-card rounded-xl border border-ctp-surface0 bg-ctp-mantle/70 overflow-hidden shadow-xs font-mono">
         <div class="p-4 sm:p-5 space-y-4">
           <!-- Haystack Text Canvas (Normal flowing paragraph text) -->
-          <div class="p-3.5 rounded bg-ctp-crust border border-ctp-surface0/40 leading-relaxed text-sm tracking-wide break-words select-none font-mono" id="anim2-haystack"></div>
+          <div class="p-3.5 rounded bg-ctp-crust border border-ctp-surface0/40 leading-relaxed text-sm tracking-wide whitespace-pre-wrap break-words select-none font-mono" id="anim2-haystack"></div>
 
           <!-- Real-time SWAR Logic Console -->
           <div class="p-3 rounded bg-ctp-crust/90 text-xs border border-ctp-surface0/40 space-y-1 font-mono">
@@ -13,7 +13,7 @@ export const Animation002 = {
               <span id="anim2-offset" class="font-semibold text-ctp-subtext1">Chunk: 0 / 25 (Bytes 0..7)</span>
               <span class="text-[var(--color-accent)] font-semibold">Throughput: ~9.25 GiB/s (4.3x speedup)</span>
             </div>
-            <div id="anim2-log" class="text-xs text-ctp-text truncate">
+            <div id="anim2-log" class="text-xs text-ctp-text break-words">
               Ready — click Run to start 8-byte SWAR scan
             </div>
           </div>
@@ -38,7 +38,7 @@ export const Animation002 = {
               <button
                 type="button"
                 id="anim2-run"
-                class="px-3.5 py-1.5 text-xs font-semibold rounded bg-[var(--color-accent)]/20 text-[var(--color-accent)] border border-[var(--color-accent)]/40 hover:bg-[var(--color-accent)]/30 transition-colors cursor-pointer flex items-center gap-1.5"
+                class="px-3.5 py-1.5 text-xs font-semibold rounded bg-ctp-surface0 text-ctp-subtext1 border border-ctp-surface1 hover:bg-ctp-surface1 hover:text-ctp-text transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <svg id="anim2-run-icon" class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                 <span id="anim2-run-label">Run</span>
@@ -71,7 +71,7 @@ export const Animation002 = {
     const haystackContainer = wrapper.querySelector('#anim2-haystack');
     const offsetEl = wrapper.querySelector('#anim2-offset');
     const logEl = wrapper.querySelector('#anim2-log');
-    const runBtn = wrapper.querySelector('#anim2-run');
+    const runBtn = wrapper.querySelector('#anim2-run') as HTMLButtonElement | null;
     const runLabel = wrapper.querySelector('#anim2-run-label');
     const runIcon = wrapper.querySelector('#anim2-run-icon');
     const resetBtn = wrapper.querySelector('#anim2-reset');
@@ -80,14 +80,26 @@ export const Animation002 = {
       return needleInput?.value ?? 'x';
     };
 
+    const updateRunButtonState = (running: boolean) => {
+      isRunning = running;
+      if (!runBtn) return;
+      if (running) {
+        if (runLabel) runLabel.textContent = 'Pause';
+        if (runIcon) runIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+        runBtn.className = 'px-3.5 py-1.5 text-xs font-semibold rounded bg-[var(--color-accent)]/20 text-[var(--color-accent)] border border-[var(--color-accent)]/40 hover:bg-[var(--color-accent)]/30 transition-colors cursor-pointer flex items-center gap-1.5';
+      } else {
+        if (runLabel) runLabel.textContent = 'Run';
+        if (runIcon) runIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+        runBtn.className = 'px-3.5 py-1.5 text-xs font-semibold rounded bg-ctp-surface0 text-ctp-subtext1 border border-ctp-surface1 hover:bg-ctp-surface1 hover:text-ctp-text transition-colors cursor-pointer flex items-center gap-1.5';
+      }
+    };
+
     const stopScan = () => {
       if (timer) {
         clearInterval(timer);
         timer = null;
       }
-      isRunning = false;
-      if (runLabel) runLabel.textContent = 'Run';
-      if (runIcon) runIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+      updateRunButtonState(false);
     };
 
     const render = () => {
@@ -96,8 +108,6 @@ export const Animation002 = {
       const chars = haystackText.split('');
 
       haystackContainer.innerHTML = chars.map((char, idx) => {
-        const isSpace = char === ' ';
-        const displayChar = isSpace ? '&nbsp;' : char;
         const isMatch = char.toLowerCase() === needle;
 
         const chunkIndex = Math.floor(idx / CHUNK_SIZE);
@@ -124,7 +134,7 @@ export const Animation002 = {
           cls += 'text-ctp-text';
         }
 
-        return `<span class="${cls}">${displayChar}</span>`;
+        return `<span class="${cls}">${char}</span>`;
       }).join('');
 
       if (offsetEl) {
@@ -186,10 +196,7 @@ export const Animation002 = {
         isFinishedNotFound = false;
       }
 
-      isRunning = true;
-      if (runLabel) runLabel.textContent = 'Pause';
-      if (runIcon) runIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
-
+      updateRunButtonState(true);
       tick();
       timer = setInterval(tick, 320);
     };
