@@ -68,9 +68,7 @@ html.latte[data-accent="peach"] { --color-accent: #fe640b; }
 .prose code {
   font-family: var(--font-mono);
   color: var(--color-accent);
-  background-color: color-mix(in srgb, var(--color-ctp-surface0) 60%, transparent);
-  padding: 0.2em 0.4em;
-  border-radius: 0.25rem;
+  font-style: italic;
   font-size: 0.875em;
   font-weight: 400;
 }
@@ -93,6 +91,7 @@ html.latte[data-accent="peach"] { --color-accent: #fe640b; }
   background-color: transparent !important;
   padding: 0 !important;
   color: inherit;
+  font-style: normal;
   font-size: 0.875em;
 }
 

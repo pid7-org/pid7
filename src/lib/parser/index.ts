@@ -203,18 +203,11 @@ function processCallouts(content: string): string {
     const bodyHtml = parseSimpleMarkdownInline(cleanLines);
     const typeLower = type.toLowerCase();
 
-    const typeColors: Record<string, { border: string; bg: string }> = {
-      info: { border: 'border-ctp-blue', bg: 'bg-ctp-blue/10' },
-      tip: { border: 'border-ctp-green', bg: 'bg-ctp-green/10' },
-      note: { border: 'border-ctp-mauve', bg: 'bg-ctp-mauve/10' },
-      task: { border: 'border-ctp-peach', bg: 'bg-ctp-peach/10' },
-      warning: { border: 'border-ctp-yellow', bg: 'bg-ctp-yellow/10' },
-      caution: { border: 'border-ctp-red', bg: 'bg-ctp-red/10' },
-    };
-
-    const style = typeColors[typeLower] || typeColors['info'];
-
-    return `<div class="callout callout-${typeLower} my-6 p-4 rounded-r-lg border-l-4 ${style.border} ${style.bg}">
+    // NOTE: Callout title formatted in font-serif italic text-sm text-[var(--color-accent)]
+    return `<div class="callout callout-${typeLower} my-6 p-4 rounded-r-lg border-l-4 border-[var(--color-accent)] bg-[var(--color-accent)]/5 space-y-1.5">
+      <div class="callout-header font-serif italic text-sm font-semibold text-[var(--color-accent)] select-none">
+        ${typeLower}
+      </div>
       <div class="callout-body font-mono text-xs sm:text-sm leading-relaxed text-ctp-text">
         ${bodyHtml}
       </div>
@@ -323,7 +316,6 @@ export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlog
     }
   }
 
-  // NOTE: Calculate word count and estimated read time (~200 words per minute)
   const plainTextWords = bodyMarkdown
     .replace(/```[\s\S]*?```/g, '')
     .replace(/<[^>]+>/g, '')
