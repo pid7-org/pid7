@@ -1,240 +1,36 @@
 ---
+import { getAnimationWidget } from './animations';
+
 interface Props {
   animId: string;
   description: string;
 }
 
 const { animId, description } = Astro.props;
+const widget = getAnimationWidget(animId);
+const renderedHtml = widget ? widget.render(description) : '';
 ---
 
-<div class="blog-animation-card my-8 rounded-xl border border-ctp-surface0 bg-ctp-mantle/70 overflow-hidden shadow-sm" data-anim-id={animId}>
-  <!-- Header -->
-  <div class="flex items-center justify-between px-4 py-2.5 bg-ctp-surface0/30 border-b border-ctp-surface0/50 font-mono text-xs text-ctp-subtext0">
-    <div class="flex items-center gap-2">
-      <span class="w-2 h-2 rounded-full bg-[var(--color-accent)] animate-pulse"></span>
-      <span class="font-semibold text-ctp-text">Interactive Visualizer</span>
-      <span class="px-1.5 py-0.5 rounded bg-ctp-surface0 text-[var(--color-accent)] font-bold text-[10px]">{animId}</span>
-    </div>
-    <span class="text-ctp-subtext0 text-[11px] hidden sm:inline">{description}</span>
-  </div>
-
-  <!-- Interactive Controls & Visual Canvas -->
-  <div class="p-4 sm:p-5 font-mono space-y-4">
-    {animId === 'ANIM1' && (
-      <div class="space-y-4" id="anim1-root">
-        <div class="flex items-center justify-between text-xs text-ctp-subtext0">
-          <span>Haystack Window (Scalar Byte Scan):</span>
-          <span>Target Needle: <strong class="text-[var(--color-accent)] font-bold">'X'</strong></span>
-        </div>
-        <!-- Byte Track -->
-        <div class="grid grid-cols-8 gap-1.5 sm:gap-2" id="anim1-track">
-          <!-- Dynamically populated via client script -->
-        </div>
-        <!-- Console Output -->
-        <div class="p-3 rounded bg-ctp-crust text-xs flex justify-between items-center border border-ctp-surface0/30">
-          <span id="anim1-status" class="text-ctp-subtext1">Step: 0 | Comparing index 0...</span>
-          <span id="anim1-perf" class="text-[11px] text-ctp-subtext0">1 byte / iter</span>
-        </div>
-      </div>
-    )}
-
-    {animId === 'ANIM2' && (
-      <div class="space-y-4" id="anim2-root">
-        <div class="flex items-center justify-between text-xs text-ctp-subtext0">
-          <span>SWAR 64-bit GPR (8-Byte Parallel Scan):</span>
-          <span>Mask Math: <strong class="text-[var(--color-accent)]">trailing_zeros() / 8</strong></span>
-        </div>
-        <!-- 64-bit Lanes -->
-        <div class="grid grid-cols-4 sm:grid-cols-8 gap-1.5" id="anim2-track">
-          <!-- Dynamically populated -->
-        </div>
-        <div class="p-3 rounded bg-ctp-crust text-xs space-y-1 border border-ctp-surface0/30">
-          <div class="flex justify-between" id="anim2-status">
-            <span class="text-ctp-subtext1">Broadcast needle across 64-bit GPR</span>
-            <span class="text-[var(--color-accent)] font-semibold">8 bytes / iter</span>
-          </div>
-          <div class="text-[11px] text-ctp-subtext0 font-mono truncate" id="anim2-mask">
-            match_mask: 0x0000008000000000
-          </div>
-        </div>
-      </div>
-    )}
-
-    {animId === 'ANIM3' && (
-      <div class="space-y-4" id="anim3-root">
-        <div class="flex items-center justify-between text-xs text-ctp-subtext0">
-          <span>AVX-512BW (64-Byte Cache Line Single-Instruction Vector Scan):</span>
-          <span class="text-[var(--color-accent)] font-semibold">vpcmpeqb -&gt; __mmask64</span>
-        </div>
-        <!-- Cache Line Grid (64 Bytes) -->
-        <div class="grid grid-cols-16 gap-1" id="anim3-track">
-          <!-- Dynamically populated 64 bytes -->
-        </div>
-        <div class="p-3 rounded bg-ctp-crust text-xs flex justify-between items-center border border-ctp-surface0/30">
-          <span id="anim3-status" class="text-ctp-green font-semibold">Full 64-byte Cache Line evaluated in 1 instruction cycle!</span>
-          <span class="text-xs text-[var(--color-accent)] font-bold">~150 GiB/sec</span>
-        </div>
-      </div>
-    )}
-
-    <!-- Controls -->
-    <div class="flex items-center justify-between border-t border-ctp-surface0/40 pt-3">
-      <div class="flex items-center gap-2">
-        <button
-          type="button"
-          data-btn-step={animId}
-          class="px-3 py-1.5 text-xs font-semibold rounded bg-ctp-surface0 hover:bg-ctp-surface1 text-ctp-text transition-colors cursor-pointer"
-        >
-          Step
-        </button>
-        <button
-          type="button"
-          data-btn-reset={animId}
-          class="px-3 py-1.5 text-xs rounded border border-ctp-surface0 hover:bg-ctp-surface0/50 text-ctp-subtext0 transition-colors cursor-pointer"
-        >
-          Reset
-        </button>
-      </div>
-      <span class="text-[11px] text-ctp-subtext0 select-none hidden sm:inline">Click Step to advance visualization</span>
-    </div>
-  </div>
-</div>
+<div class="blog-animation-wrapper my-8" data-anim-id={animId} data-anim-desc={description} set:html={renderedHtml} />
 
 <script>
-  function initAnim1() {
-    const track = document.getElementById('anim1-track');
-    const status = document.getElementById('anim1-status');
-    const stepBtn = document.querySelector('[data-btn-step="ANIM1"]');
-    const resetBtn = document.querySelector('[data-btn-reset="ANIM1"]');
-    if (!track || !status || !stepBtn || !resetBtn) return;
+  import { getAnimationWidget } from './animations';
 
-    const haystack = ['A', 'B', 'C', 'D', 'E', 'X', 'F', 'G'];
-    const needle = 'X';
-    let step = 0;
+  function setupAnimation() {
+    document.querySelectorAll('.blog-animation-wrapper').forEach((wrapper) => {
+      const animId = wrapper.getAttribute('data-anim-id');
+      if (!animId) return;
 
-    function render() {
-      track!.innerHTML = haystack.map((char, idx) => {
-        let bgClass = 'bg-ctp-surface0/40 border-ctp-surface0 text-ctp-subtext0';
-        if (idx < step) bgClass = 'bg-ctp-surface0/20 border-ctp-surface0/30 text-ctp-subtext0/60';
-        if (idx === step) bgClass = char === needle ? 'bg-ctp-green/20 border-ctp-green text-ctp-green font-bold scale-105' : 'bg-[var(--color-accent)]/20 border-[var(--color-accent)] text-[var(--color-accent)] font-bold scale-105';
-        if (idx === step && char === needle) bgClass = 'bg-ctp-green/30 border-ctp-green text-ctp-green font-bold ring-2 ring-ctp-green/50';
+      const widget = getAnimationWidget(animId);
+      if (!widget) return;
 
-        return `<div class="flex flex-col items-center justify-center p-2 rounded border transition-all text-xs font-mono ${bgClass}">
-          <span class="text-[10px] text-ctp-subtext0 mb-1">[${idx}]</span>
-          <span class="text-sm font-bold">${char}</span>
-        </div>`;
-      }).join('');
-
-      if (step < haystack.length) {
-        if (haystack[step] === needle) {
-          status!.innerHTML = `<span class="text-ctp-green font-semibold">MATCH FOUND at index ${step}! ('${needle}')</span>`;
-        } else {
-          status!.textContent = `Step ${step + 1}: Comparing index ${step} ('${haystack[step]}') !== '${needle}'`;
-        }
-      } else {
-        status!.textContent = 'Scan completed.';
+      const card = wrapper.querySelector('.blog-animation-card');
+      if (card) {
+        widget.init(wrapper);
       }
-    }
-
-    stepBtn.addEventListener('click', () => {
-      step = (step + 1) % haystack.length;
-      render();
     });
-
-    resetBtn.addEventListener('click', () => {
-      step = 0;
-      render();
-    });
-
-    render();
   }
 
-  function initAnim2() {
-    const track = document.getElementById('anim2-track');
-    const status = document.getElementById('anim2-status');
-    const maskEl = document.getElementById('anim2-mask');
-    const stepBtn = document.querySelector('[data-btn-step="ANIM2"]');
-    const resetBtn = document.querySelector('[data-btn-reset="ANIM2"]');
-    if (!track || !status || !stepBtn || !resetBtn) return;
-
-    const lanes = ['0x41', '0x42', '0x43', '0x58', '0x45', '0x46', '0x47', '0x48']; // 0x58 = 'X'
-    let step = 0;
-
-    function render() {
-      track!.innerHTML = lanes.map((byteVal, idx) => {
-        const isMatch = byteVal === '0x58';
-        const highlighted = step > 0 && isMatch;
-        const bg = highlighted ? 'bg-ctp-green/20 border-ctp-green text-ctp-green font-bold' : 'bg-ctp-surface0/40 border-ctp-surface0 text-ctp-subtext1';
-
-        return `<div class="flex flex-col items-center justify-center p-1.5 sm:p-2 rounded border text-xs font-mono ${bg}">
-          <span class="text-[9px] text-ctp-subtext0">L${idx}</span>
-          <span class="text-[11px] font-semibold">${byteVal}</span>
-        </div>`;
-      }).join('');
-
-      if (step === 0) {
-        status!.innerHTML = '<span class="text-ctp-subtext1">Load 8 bytes into 64-bit GPR</span>';
-        if (maskEl) maskEl.textContent = 'match_mask: 0x0000000000000000';
-      } else {
-        status!.innerHTML = '<span class="text-ctp-green font-semibold">SWAR XOR & Bitmask: Match detected in Lane 3!</span>';
-        if (maskEl) maskEl.textContent = 'match_mask: 0x0000008000000000 -> trailing_zeros()/8 = Index 3';
-      }
-    }
-
-    stepBtn.addEventListener('click', () => {
-      step = step === 0 ? 1 : 0;
-      render();
-    });
-
-    resetBtn.addEventListener('click', () => {
-      step = 0;
-      render();
-    });
-
-    render();
-  }
-
-  function initAnim3() {
-    const track = document.getElementById('anim3-track');
-    const stepBtn = document.querySelector('[data-btn-step="ANIM3"]');
-    const resetBtn = document.querySelector('[data-btn-reset="ANIM3"]');
-    if (!track || !stepBtn || !resetBtn) return;
-
-    let activeIndex = 37; // Target match index in 64-byte window
-    let state = 0;
-
-    function render() {
-      const items = [];
-      for (let i = 0; i < 64; i++) {
-        const isMatch = i === activeIndex;
-        let bg = 'bg-ctp-surface0/30 border-ctp-surface0/50 text-ctp-subtext0';
-        if (state === 1) {
-          bg = isMatch ? 'bg-ctp-green border-ctp-green text-ctp-crust font-bold scale-125 z-10 shadow-lg' : 'bg-ctp-surface0/60 border-ctp-surface0 text-ctp-subtext1 opacity-60';
-        }
-        items.push(`<div class="h-4 rounded-[2px] border flex items-center justify-center text-[8px] transition-all duration-300 ${bg}" title="Byte ${i}"></div>`);
-      }
-      track!.innerHTML = items.join('');
-    }
-
-    stepBtn.addEventListener('click', () => {
-      state = state === 0 ? 1 : 0;
-      render();
-    });
-
-    resetBtn.addEventListener('click', () => {
-      state = 0;
-      render();
-    });
-
-    render();
-  }
-
-  function setupVisualizers() {
-    initAnim1();
-    initAnim2();
-    initAnim3();
-  }
-
-  setupVisualizers();
-  document.addEventListener('astro:after-swap', setupVisualizers);
+  setupAnimation();
+  document.addEventListener('astro:after-swap', setupAnimation);
 </script>

@@ -7,7 +7,7 @@ const FRONTMATTER_REGEX = /^---\r?\n([\s\S]*?)\r?\n---/;
 const ANGLE_BLOCK_REGEX = /^<>\s*\r?\n([\s\S]*?)\r?\n^<\/>\s*$/gm;
 const TILDE_BLOCK_REGEX = /^~\s*\r?\n([\s\S]*?)\r?\n^~\s*$/gm;
 const CODE_FENCE_REGEX = /^```([a-zA-Z0-9_-]*)\r?\n([\s\S]*?)\r?\n```$/m;
-const ANIM_TAG_REGEX = /\{ANIM([A-Za-z0-9_]+):\s*([^}]+)\}/g;
+const ANIM_TAG_REGEX = /(?:\{@anim\s+\(([^)]+)\)\s*([^}]*)\}|\{ANIM([A-Za-z0-9_-]+):\s*([^}]+)\})/g;
 const CALLOUT_BLOCK_REGEX = /^>\s*\[!(INFO|TIP|NOTE|TASK|WARNING|CAUTION)\]\r?\n((?:^>.*(?:\r?\n|$))+)/gm;
 const BLOCK_MATH_REGEX = /\$\$([\s\S]*?)\$\$/g;
 const INLINE_MATH_REGEX = /(?<!\\)\$([^\$\n]+?)\$/g;
@@ -217,11 +217,23 @@ function processCallouts(content: string): string {
 }
 
 function processAnimationTags(content: string): string {
-  return content.replace(ANIM_TAG_REGEX, (_, id: string, desc: string) => {
-    return `<div class="blog-animation-wrapper my-8" data-anim-id="ANIM${id}" data-anim-desc="${desc.trim()}">
-      <div id="anim-slot-ANIM${id}" class="anim-slot flex flex-col items-center justify-center p-6 border border-dashed border-ctp-surface0 rounded-lg bg-ctp-mantle/40 font-mono text-xs text-ctp-subtext0">
-        <span class="text-[var(--color-accent)] font-semibold mb-1">Interactive Visualizer [ANIM${id}]</span>
-        <span>${desc.trim()}</span>
+  return content.replace(ANIM_TAG_REGEX, (_, animId1, desc1, animId2, desc2) => {
+    let animId = '';
+    let desc = '';
+
+    if (animId1 !== undefined) {
+      animId = animId1.trim();
+      desc = (desc1 || '').trim();
+    } else {
+      const cleanId = (animId2 || '').trim();
+      animId = cleanId.startsWith('ANIM') || cleanId.includes('-') || cleanId.includes('_') ? cleanId : `ANIM${cleanId}`;
+      desc = (desc2 || '').trim();
+    }
+
+    return `<div class="blog-animation-wrapper my-8" data-anim-id="${animId}" data-anim-desc="${desc}">
+      <div id="anim-slot-${animId}" class="anim-slot flex flex-col items-center justify-center p-6 border border-dashed border-ctp-surface0 rounded-lg bg-ctp-mantle/40 font-mono text-xs text-ctp-subtext0">
+        <span class="text-[var(--color-accent)] font-semibold mb-1">Interactive Visualizer [${animId}]</span>
+        <span>${desc}</span>
       </div>
     </div>\n\n`;
   });

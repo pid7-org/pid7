@@ -75,6 +75,23 @@ describe('Custom Markdown Blog Parser Module', () => {
     expect(parsed.html).toContain('interactive animation to visualize byte-by-byte scan');
   });
 
+  it('transforms {@anim (id) desc} placeholders into animation containers', async () => {
+    const markdown = `---
+slug: test-anim
+title: Test
+created: 01-09-2026
+---
+
+{@anim (001) first animation description}
+{@anim (002) second animation description}
+`;
+    const parsed = await parseMarkdownBlog(markdown);
+    expect(parsed.html).toContain('data-anim-id="001"');
+    expect(parsed.html).toContain('data-anim-desc="first animation description"');
+    expect(parsed.html).toContain('data-anim-id="002"');
+    expect(parsed.html).toContain('data-anim-desc="second animation description"');
+  });
+
   it('renders callout blocks > [!INFO]', async () => {
     const parsed = await parseMarkdownBlog(SAMPLE_MARKDOWN);
     expect(parsed.html).toContain('callout-info');
@@ -141,8 +158,8 @@ describe('Custom Markdown Blog Parser Module', () => {
     expect(parsed.html).toContain('custom-code-block-tilde');
     expect(parsed.html).toContain('<em>For completely L1D cache-resident payloads');
     expect(parsed.html).toContain('copy-code-btn');
-    expect(parsed.html).toContain('data-anim-id="ANIM1"');
-    expect(parsed.html).toContain('data-anim-id="ANIM2"');
+    expect(parsed.html).toContain('data-anim-id="001"');
+    expect(parsed.html).toContain('data-anim-id="002"');
     expect(parsed.html).toContain('<ul class="list-none');
     expect(parsed.html).toContain('before:content-[\'-\']');
     expect(parsed.html).toContain('issue a scalar load using <code>movzx</code>');
