@@ -9,8 +9,9 @@ export const Animation001 = {
 
           <!-- Real-time Logic Log Console -->
           <div class="p-3 rounded bg-ctp-crust/90 text-xs border border-ctp-surface0/40 space-y-1">
-            <div class="flex justify-between items-center text-[11px] text-ctp-subtext0 border-b border-ctp-surface0/30 pb-1.5 mb-1.5">
+            <div class="flex justify-between items-center text-[11px] text-ctp-subtext0 border-b border-ctp-surface0/30 pb-1.5 mb-1.5 font-mono">
               <span id="anim1-offset" class="font-semibold text-ctp-subtext1">Offset: 0 / 44</span>
+              <span class="text-[var(--color-accent)] font-semibold">Throughput: ~2.14 GiB/s</span>
             </div>
             <div id="anim1-log" class="font-mono text-xs text-ctp-text truncate">
               Ready — click Run to start scalar scan loop

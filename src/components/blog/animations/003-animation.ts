@@ -11,7 +11,7 @@ export const Animation003 = {
           <div class="grid grid-cols-16 gap-1" id="anim3-track"></div>
           <div class="p-3 rounded bg-ctp-crust text-xs flex justify-between items-center border border-ctp-surface0/30">
             <span id="anim3-status" class="text-ctp-green font-semibold">Full 64-byte Cache Line evaluated in 1 instruction cycle!</span>
-            <span class="text-xs text-[var(--color-accent)] font-bold">~150 GiB/sec</span>
+            <span class="text-xs text-[var(--color-accent)] font-semibold font-mono">Throughput: ~150 GiB/s (70x speedup)</span>
           </div>
           <div class="flex items-center justify-between border-t border-ctp-surface0/40 pt-3">
             <div class="flex items-center gap-2">
