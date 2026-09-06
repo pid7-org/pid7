@@ -23,5 +23,6 @@ export interface ParsedBlogPost {
   glossary: GlossaryItem[];
   references: ReferenceItem[];
   readTimeMinutes: number;
+  wordCount: number;
   rawMarkdown: string;
 }

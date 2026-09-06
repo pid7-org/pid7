@@ -91,7 +91,7 @@ function parseSimpleMarkdownInline(text: string): string {
   html = html.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/__([\s\S]+?)__/g, '<strong>$1</strong>');
 
-  // NOTE: Italic _text_ supports multiline paragraphs with soft line breaks
+  // Italic _text_ supports multiline paragraphs with soft line breaks
   html = html.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em>$1</em>');
   html = html.replace(/(?<![a-zA-Z0-9_])_([^_]+?)_(?![a-zA-Z0-9_])/g, '<em>$1</em>');
 
@@ -150,14 +150,26 @@ async function processCustomCodeBlocks(content: string): Promise<string> {
     }
 
     const highlighted = await highlightCode(codeStr, lang);
-    const descHtml = desc ? `<div class="code-desc font-mono text-xs text-ctp-subtext0 border-t border-ctp-surface0/60 pt-2 px-3.5 pb-2.5 bg-ctp-surface0/20">${parseSimpleMarkdownInline(desc)}</div>` : '';
-    const styleBadge = style === 'angle' ? '&lt;&gt;' : '~';
+    const descHtml = desc ? `<div class="code-desc font-mono italic text-[10px] leading-normal text-ctp-subtext0 border-t border-ctp-surface0/60 pt-2 px-3.5 pb-2 bg-ctp-surface0/20">${parseSimpleMarkdownInline(desc)}</div>` : '';
 
-    // NOTE: Append double newline to guarantee paragraph block separation in block splitting
+    const cleanRawCode = codeStr.trim();
+    const encodedRawCode = encodeURIComponent(cleanRawCode);
+
     return `<div class="custom-code-block custom-code-block-${style} my-6 rounded-lg border border-ctp-surface0 bg-ctp-mantle/60 overflow-hidden shadow-xs" data-block-style="${style}">
       <div class="code-header flex items-center justify-between px-3.5 py-1.5 bg-ctp-surface0/30 border-b border-ctp-surface0/40 text-xs font-mono text-ctp-subtext0 select-none">
-        <span class="font-bold text-[var(--color-accent)]">${styleBadge}</span>
-        <span class="uppercase tracking-wider text-[11px] text-ctp-subtext1 font-semibold">${lang || 'code'}</span>
+        <span class="code-lang uppercase tracking-wider text-[11px] text-ctp-subtext1 font-bold">${lang || 'code'}</span>
+        <button
+          type="button"
+          class="copy-code-btn p-1 rounded text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface0/60 transition-colors cursor-pointer"
+          data-code="${encodedRawCode}"
+          aria-label="Copy code"
+          title="Copy code to clipboard"
+        >
+          <svg class="w-3.5 h-3.5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+        </button>
       </div>
       <div class="code-body overflow-x-auto p-3 font-mono text-sm leading-relaxed">${highlighted}</div>
       ${descHtml}
@@ -191,24 +203,19 @@ function processCallouts(content: string): string {
     const bodyHtml = parseSimpleMarkdownInline(cleanLines);
     const typeLower = type.toLowerCase();
 
-    const typeColors: Record<string, { border: string; bg: string; text: string; icon: string }> = {
-      info: { border: 'border-ctp-blue', bg: 'bg-ctp-blue/10', text: 'text-ctp-blue', icon: 'ℹ' },
-      tip: { border: 'border-ctp-green', bg: 'bg-ctp-green/10', text: 'text-ctp-green', icon: '💡' },
-      note: { border: 'border-ctp-mauve', bg: 'bg-ctp-mauve/10', text: 'text-ctp-mauve', icon: '📝' },
-      task: { border: 'border-ctp-peach', bg: 'bg-ctp-peach/10', text: 'text-ctp-peach', icon: '🎯' },
-      warning: { border: 'border-ctp-yellow', bg: 'bg-ctp-yellow/10', text: 'text-ctp-yellow', icon: '⚠️' },
-      caution: { border: 'border-ctp-red', bg: 'bg-ctp-red/10', text: 'text-ctp-red', icon: '🚨' },
+    const typeColors: Record<string, { border: string; bg: string }> = {
+      info: { border: 'border-ctp-blue', bg: 'bg-ctp-blue/10' },
+      tip: { border: 'border-ctp-green', bg: 'bg-ctp-green/10' },
+      note: { border: 'border-ctp-mauve', bg: 'bg-ctp-mauve/10' },
+      task: { border: 'border-ctp-peach', bg: 'bg-ctp-peach/10' },
+      warning: { border: 'border-ctp-yellow', bg: 'bg-ctp-yellow/10' },
+      caution: { border: 'border-ctp-red', bg: 'bg-ctp-red/10' },
     };
 
     const style = typeColors[typeLower] || typeColors['info'];
 
-    // NOTE: Append double newline so callouts cleanly detach from subsequent paragraphs
-    return `<div class="callout callout-${typeLower} my-6 p-4 rounded-r-lg border-l-4 ${style.border} ${style.bg} space-y-2">
-      <div class="callout-header flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider ${style.text}">
-        <span>${style.icon}</span>
-        <span>${type}</span>
-      </div>
-      <div class="callout-body font-mono text-sm leading-relaxed text-ctp-text">
+    return `<div class="callout callout-${typeLower} my-6 p-4 rounded-r-lg border-l-4 ${style.border} ${style.bg}">
+      <div class="callout-body font-mono text-xs sm:text-sm leading-relaxed text-ctp-text">
         ${bodyHtml}
       </div>
     </div>\n\n`;
@@ -316,6 +323,7 @@ export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlog
     }
   }
 
+  // NOTE: Calculate word count and estimated read time (~200 words per minute)
   const plainTextWords = bodyMarkdown
     .replace(/```[\s\S]*?```/g, '')
     .replace(/<[^>]+>/g, '')
@@ -323,6 +331,7 @@ export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlog
     .split(/\s+/)
     .filter(Boolean).length;
   const readTimeMinutes = Math.max(1, Math.ceil(plainTextWords / 200));
+  const wordCount = plainTextWords;
 
   let html = await processCustomCodeBlocks(bodyMarkdown);
   html = processCallouts(html);
@@ -375,6 +384,7 @@ export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlog
     glossary,
     references,
     readTimeMinutes,
+    wordCount,
     rawMarkdown,
   };
 }

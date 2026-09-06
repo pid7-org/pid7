@@ -102,6 +102,26 @@ describe('Custom Markdown Blog Parser Module', () => {
     expect(parsed.references[0].contentHtml).toContain('Footnote details for reference 1');
   });
 
+  it('includes language tag on left and copy button on right in code block header', async () => {
+    const parsed = await parseMarkdownBlog(SAMPLE_MARKDOWN);
+    expect(parsed.html).toContain('code-lang uppercase tracking-wider text-[11px] text-ctp-subtext1 font-bold">asm</span>');
+    expect(parsed.html).toContain('copy-code-btn');
+    expect(parsed.html).toContain('aria-label="Copy code"');
+  });
+
+  it('preserves well-formatted raw unescaped code in data-code attribute', async () => {
+    const parsed = await parseMarkdownBlog(SAMPLE_MARKDOWN);
+    const expectedRawAsm = encodeURIComponent('movzx al, byte [rdi]');
+    expect(parsed.html).toContain(`data-code="${expectedRawAsm}"`);
+
+    const expectedRawRust = encodeURIComponent('let v = _mm512_loadu_si512(ptr);');
+    expect(parsed.html).toContain(`data-code="${expectedRawRust}"`);
+
+    // Verify decoding recovers the exact pristine code string
+    expect(decodeURIComponent(expectedRawAsm)).toBe('movzx al, byte [rdi]');
+    expect(decodeURIComponent(expectedRawRust)).toBe('let v = _mm512_loadu_si512(ptr);');
+  });
+
   it('parses actual 001.md file without errors', async () => {
     const fs = await import('node:fs/promises');
     const path = await import('node:path');
@@ -111,14 +131,16 @@ describe('Custom Markdown Blog Parser Module', () => {
     expect(parsed.frontmatter.id).toBe('ashwa-devlog');
     expect(parsed.frontmatter.title).toBe('Searching through 150 GiB of Text per Second with SIMD');
     expect(parsed.frontmatter.created).toBe('02-09-2026');
-    expect(parsed.frontmatter.lastUpdated).toBe('04-09-2026');
+    expect(parsed.frontmatter.lastUpdated).toBe('06-09-2026');
     expect(parsed.frontmatter.tags).toEqual(['Ashwa', 'SIMD', 'Rust', 'Search']);
     expect(parsed.readTimeMinutes).toBeGreaterThan(0);
+    expect(parsed.wordCount).toBeGreaterThan(0);
     expect(parsed.glossary.length).toBe(7);
     expect(parsed.references.length).toBe(4);
     expect(parsed.html).toContain('custom-code-block-angle');
     expect(parsed.html).toContain('custom-code-block-tilde');
     expect(parsed.html).toContain('<em>For completely L1D cache-resident payloads');
+    expect(parsed.html).toContain('copy-code-btn');
     expect(parsed.html).toContain('data-anim-id="ANIM1"');
     expect(parsed.html).toContain('data-anim-id="ANIM2"');
     expect(parsed.html).toContain('data-anim-id="ANIM3"');
