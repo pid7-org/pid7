@@ -114,17 +114,29 @@ html.latte[data-accent="mono"], html.latte[data-accent="text"], html.latte[data-
   text-align: center;
 }
 
-/* Custom Code Block Highlighting Overrides */
-.custom-code-block pre.shiki {
+/* Custom Code Block Highlighting Overrides & Shiki Dual-Theme Support */
+.custom-code-block pre.shiki,
+.prose pre.shiki {
   background-color: transparent !important;
   margin: 0 !important;
   padding: 0 !important;
   border: none !important;
 }
 
-.custom-code-block pre.shiki code {
+.custom-code-block pre.shiki code,
+.prose pre.shiki code {
   background-color: transparent !important;
   padding: 0 !important;
+}
+
+/* Force Shiki syntax tokens to use Catppuccin Macchiato in Dark Mode */
+html.dark .shiki span,
+html.macchiato .shiki span,
+html:not(.latte) .shiki span {
+  color: var(--shiki-dark) !important;
+  font-style: var(--shiki-dark-font-style, inherit) !important;
+  font-weight: var(--shiki-dark-font-weight, inherit) !important;
+  text-decoration: var(--shiki-dark-text-decoration, inherit) !important;
 }
 
 /* Callout Styling */
