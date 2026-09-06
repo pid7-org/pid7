@@ -121,7 +121,7 @@ created: 01-09-2026
 
   it('includes language tag on left and copy button on right in code block header', async () => {
     const parsed = await parseMarkdownBlog(SAMPLE_MARKDOWN);
-    expect(parsed.html).toContain('code-lang uppercase tracking-wider text-[11px] text-ctp-subtext1 font-bold">asm</span>');
+    expect(parsed.html).toContain('code-lang uppercase tracking-wider text-[10px] sm:text-[11px] text-ctp-subtext1 font-bold">asm</span>');
     expect(parsed.html).toContain('copy-code-btn');
     expect(parsed.html).toContain('aria-label="Copy code"');
   });

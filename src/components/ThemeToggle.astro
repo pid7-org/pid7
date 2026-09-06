@@ -2,7 +2,6 @@
 ---
 
 <div class="flex items-center gap-2">
-  <!-- Accent Color Circle Button -->
   <button
     id="accent-toggle"
     type="button"
@@ -11,7 +10,6 @@
     title="Change accent color"
   ></button>
 
-  <!-- Half-filled Circle Theme Toggle Button -->
   <button
     id="theme-toggle"
     type="button"
@@ -62,7 +60,6 @@
   }
 
   function setupControls() {
-    // Accent toggle
     const currentAccent = getStoredAccent();
     applyAccent(currentAccent);
 
@@ -74,7 +71,6 @@
       applyAccent(nextAccent);
     });
 
-    // Theme toggle
     const themeBtn = document.getElementById('theme-toggle');
     themeBtn?.addEventListener('click', () => {
       const isLatte = document.documentElement.classList.contains('latte');
