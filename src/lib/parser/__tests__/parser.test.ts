@@ -143,7 +143,9 @@ describe('Custom Markdown Blog Parser Module', () => {
     expect(parsed.html).toContain('copy-code-btn');
     expect(parsed.html).toContain('data-anim-id="ANIM1"');
     expect(parsed.html).toContain('data-anim-id="ANIM2"');
-    expect(parsed.html).toContain('data-anim-id="ANIM3"');
+    expect(parsed.html).toContain('<ul class="list-none');
+    expect(parsed.html).toContain('before:content-[\'-\']');
+    expect(parsed.html).toContain('issue a scalar load using <code>movzx</code>');
   });
 });
 

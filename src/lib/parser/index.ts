@@ -284,6 +284,53 @@ function parseReferences(referencesMarkdown: string): ReferenceItem[] {
   return items;
 }
 
+function processListBlock(block: string): string | null {
+  const lines = block.trim().split(/\r?\n/);
+  if (lines.length === 0) return null;
+
+  const firstLine = lines[0].trim();
+  const isUnordered = /^[\*\-\+]\s+/.test(firstLine);
+  const isOrdered = /^\d+\.\s+/.test(firstLine);
+
+  if (!isUnordered && !isOrdered) return null;
+
+  const items: string[] = [];
+  let currentItem = '';
+
+  for (const line of lines) {
+    const isNewItem = isUnordered
+      ? /^[\*\-\+]\s+/.test(line.trim())
+      : /^\d+\.\s+/.test(line.trim());
+
+    if (isNewItem) {
+      if (currentItem) {
+        items.push(currentItem.trim());
+      }
+      currentItem = line.trim().replace(/^([\*\-\+]|\d+\.)\s+/, '');
+    } else {
+      currentItem += ' ' + line.trim();
+    }
+  }
+  if (currentItem) {
+    items.push(currentItem.trim());
+  }
+
+  if (isUnordered) {
+    const itemsHtml = items
+      .map(
+        (item) =>
+          `<li class="leading-relaxed pl-4 relative before:content-['-'] before:absolute before:left-0 before:text-ctp-subtext0">${parseSimpleMarkdownInline(item)}</li>`
+      )
+      .join('\n');
+    return `<ul class="list-none space-y-1.5 my-4 font-mono text-xs sm:text-sm text-ctp-text">\n${itemsHtml}\n</ul>`;
+  } else {
+    const itemsHtml = items
+      .map((item) => `<li class="leading-relaxed">${parseSimpleMarkdownInline(item)}</li>`)
+      .join('\n');
+    return `<ol class="list-decimal list-inside space-y-1.5 my-4 font-mono text-xs sm:text-sm text-ctp-text">\n${itemsHtml}\n</ol>`;
+  }
+}
+
 export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlogPost> {
   const { frontmatter, content: rawBody } = parseFrontmatter(rawMarkdown);
 
@@ -363,6 +410,12 @@ export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlog
     ) {
       return trimmed;
     }
+
+    const listHtml = processListBlock(trimmed);
+    if (listHtml) {
+      return listHtml;
+    }
+
     return `<p class="font-mono text-xs sm:text-sm leading-relaxed text-ctp-text my-4">${parseSimpleMarkdownInline(trimmed)}</p>`;
   });
 
