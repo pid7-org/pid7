@@ -143,3 +143,12 @@ html:not(.latte) .shiki span {
 .callout {
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
+
+/* Mobile Responsive Touch & Overflow Safety */
+.code-body pre,
+.prose pre,
+.katex-display-block {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}

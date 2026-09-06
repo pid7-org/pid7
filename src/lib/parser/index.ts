@@ -156,9 +156,9 @@ async function processCustomCodeBlocks(content: string): Promise<string> {
     const cleanRawCode = codeStr.trim();
     const encodedRawCode = encodeURIComponent(cleanRawCode);
 
-    return `<div class="custom-code-block custom-code-block-${style} my-6 rounded-lg border border-ctp-surface0 bg-ctp-mantle/60 overflow-hidden shadow-xs" data-block-style="${style}">
-      <div class="code-header flex items-center justify-between px-3.5 py-1.5 bg-ctp-surface0/30 border-b border-ctp-surface0/40 text-xs font-mono text-ctp-subtext0 select-none">
-        <span class="code-lang uppercase tracking-wider text-[11px] text-ctp-subtext1 font-bold">${lang || 'code'}</span>
+    return `<div class="custom-code-block custom-code-block-${style} my-4 sm:my-6 rounded-lg border border-ctp-surface0 bg-ctp-mantle/60 overflow-hidden shadow-xs" data-block-style="${style}">
+      <div class="code-header flex items-center justify-between px-3 sm:px-3.5 py-1.5 bg-ctp-surface0/30 border-b border-ctp-surface0/40 text-xs font-mono text-ctp-subtext0 select-none">
+        <span class="code-lang uppercase tracking-wider text-[10px] sm:text-[11px] text-ctp-subtext1 font-bold">${lang || 'code'}</span>
         <button
           type="button"
           class="copy-code-btn p-1 rounded text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface0/60 transition-colors cursor-pointer"
@@ -172,7 +172,7 @@ async function processCustomCodeBlocks(content: string): Promise<string> {
           </svg>
         </button>
       </div>
-      <div class="code-body overflow-x-auto p-3 font-mono text-sm leading-relaxed">${highlighted}</div>
+      <div class="code-body overflow-x-auto p-2.5 sm:p-3.5 font-mono text-xs sm:text-sm leading-relaxed">${highlighted}</div>
       ${descHtml}
     </div>\n\n`;
   };
@@ -205,11 +205,11 @@ function processCallouts(content: string): string {
     const typeLower = type.toLowerCase();
 
     // NOTE: Callout title formatted in font-serif italic text-sm text-[var(--color-accent)]
-    return `<div class="callout callout-${typeLower} my-6 p-4 rounded-r-lg border-l-4 border-[var(--color-accent)] bg-[var(--color-accent)]/5 space-y-1.5">
-      <div class="callout-header font-serif italic text-sm font-semibold text-[var(--color-accent)] select-none">
+    return `<div class="callout callout-${typeLower} my-4 sm:my-6 p-3.5 sm:p-4 rounded-r-lg border-l-4 border-[var(--color-accent)] bg-[var(--color-accent)]/5 space-y-1.5">
+      <div class="callout-header font-serif italic text-xs sm:text-sm font-semibold text-[var(--color-accent)] select-none">
         ${typeLower}
       </div>
-      <div class="callout-body font-mono text-xs sm:text-sm leading-relaxed text-ctp-text">
+      <div class="callout-body font-mono text-xs sm:text-sm leading-relaxed text-ctp-text break-words">
         ${bodyHtml}
       </div>
     </div>\n\n`;
@@ -230,8 +230,8 @@ function processAnimationTags(content: string): string {
       desc = (desc2 || '').trim();
     }
 
-    return `<div class="blog-animation-wrapper my-8" data-anim-id="${animId}" data-anim-desc="${desc}">
-      <div id="anim-slot-${animId}" class="anim-slot flex flex-col items-center justify-center p-6 border border-dashed border-ctp-surface0 rounded-lg bg-ctp-mantle/40 font-mono text-xs text-ctp-subtext0">
+    return `<div class="blog-animation-wrapper my-6 sm:my-8" data-anim-id="${animId}" data-anim-desc="${desc}">
+      <div id="anim-slot-${animId}" class="anim-slot flex flex-col items-center justify-center p-4 sm:p-6 border border-dashed border-ctp-surface0 rounded-lg bg-ctp-mantle/40 font-mono text-xs text-ctp-subtext0">
         <span class="text-[var(--color-accent)] font-semibold mb-1">Interactive Visualizer [${animId}]</span>
         <span>${desc}</span>
       </div>
@@ -334,12 +334,12 @@ function processListBlock(block: string): string | null {
           `<li class="leading-relaxed pl-4 relative before:content-['-'] before:absolute before:left-0 before:text-ctp-subtext0">${parseSimpleMarkdownInline(item)}</li>`
       )
       .join('\n');
-    return `<ul class="list-none space-y-1.5 my-4 font-mono text-xs sm:text-sm text-ctp-text">\n${itemsHtml}\n</ul>`;
+    return `<ul class="list-none space-y-1.5 my-3.5 sm:my-4 font-mono text-xs sm:text-sm text-ctp-text">\n${itemsHtml}\n</ul>`;
   } else {
     const itemsHtml = items
       .map((item) => `<li class="leading-relaxed">${parseSimpleMarkdownInline(item)}</li>`)
       .join('\n');
-    return `<ol class="list-decimal list-inside space-y-1.5 my-4 font-mono text-xs sm:text-sm text-ctp-text">\n${itemsHtml}\n</ol>`;
+    return `<ol class="list-decimal list-inside space-y-1.5 my-3.5 sm:my-4 font-mono text-xs sm:text-sm text-ctp-text">\n${itemsHtml}\n</ol>`;
   }
 }
 
@@ -391,7 +391,7 @@ export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlog
 
   html = html.replace(/^##\s+§\s+(.*)$/gm, (_, title) => {
     const id = slugify(title);
-    return `<h2 id="${id}" class="font-serif text-xl sm:text-2xl font-semibold mt-10 mb-4 text-ctp-text flex items-center gap-2 group">
+    return `<h2 id="${id}" class="font-serif text-lg sm:text-2xl font-semibold mt-8 sm:mt-10 mb-3 sm:mb-4 text-ctp-text flex items-center gap-2 group flex-wrap">
       <span class="text-[var(--color-accent)] font-mono font-normal">§</span>
       <span>${parseSimpleMarkdownInline(title)}</span>
       <a href="#${id}" class="opacity-0 group-hover:opacity-100 text-ctp-subtext0 hover:text-[var(--color-accent)] font-mono text-xs transition-opacity ml-2">#</a>
@@ -400,7 +400,7 @@ export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlog
 
   html = html.replace(/^##\s+([^§\n].*)$/gm, (_, title) => {
     const id = slugify(title);
-    return `<h2 id="${id}" class="font-serif text-xl sm:text-2xl font-semibold mt-10 mb-4 text-ctp-text flex items-center gap-2 group">
+    return `<h2 id="${id}" class="font-serif text-lg sm:text-2xl font-semibold mt-8 sm:mt-10 mb-3 sm:mb-4 text-ctp-text flex items-center gap-2 group flex-wrap">
       <span>${parseSimpleMarkdownInline(title)}</span>
       <a href="#${id}" class="opacity-0 group-hover:opacity-100 text-ctp-subtext0 hover:text-[var(--color-accent)] font-mono text-xs transition-opacity ml-2">#</a>
     </h2>`;
@@ -428,7 +428,7 @@ export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlog
       return listHtml;
     }
 
-    return `<p class="font-mono text-xs sm:text-sm leading-relaxed text-ctp-text my-4">${parseSimpleMarkdownInline(trimmed)}</p>`;
+    return `<p class="font-mono text-xs sm:text-sm leading-relaxed text-ctp-text my-3.5 sm:my-4">${parseSimpleMarkdownInline(trimmed)}</p>`;
   });
 
   html = processedBlocks.filter(Boolean).join('\n\n');

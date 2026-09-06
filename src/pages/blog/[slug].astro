@@ -21,32 +21,32 @@ const { post } = Astro.props;
 ---
 
 <Layout title={`${post.frontmatter.title} — pid7`}>
-	<main class="w-full max-w-screen-md mx-auto px-6 py-10 sm:py-14 space-y-10">
+	<main class="w-full max-w-screen-md mx-auto px-4 sm:px-6 py-8 sm:py-14 space-y-8 sm:space-y-10 min-w-0 overflow-hidden">
 		<!-- Header (matching index.astro UI structure exactly) -->
-		<header class="flex items-start justify-between gap-6">
-			<div class="flex flex-col">
+		<header class="flex items-start justify-between gap-4 sm:gap-6">
+			<div class="flex flex-col min-w-0">
 				<h1 class="font-playwrite text-xl sm:text-2xl font-semibold tracking-tight transition-colors duration-300" style="color: var(--color-accent);">
 					<a href="/" class="hover:opacity-90">pid7</a>
 				</h1>
-				<p class="mt-2.5 font-mono text-xs sm:text-sm text-ctp-subtext0 tracking-wide leading-relaxed">
+				<p class="mt-2 sm:mt-2.5 font-mono text-xs sm:text-sm text-ctp-subtext0 tracking-wide leading-relaxed">
 					engineering ideas into reality
 				</p>
 			</div>
-			<div class="flex flex-col items-end gap-3 shrink-0">
+			<div class="flex flex-col items-end gap-2.5 sm:gap-3 shrink-0">
 				<ThemeToggle />
-				<span id="ist-clock" class="font-mono text-xs text-ctp-subtext0 select-none">
+				<span id="ist-clock" class="font-mono text-[11px] sm:text-xs text-ctp-subtext0 select-none">
 					--:--:-- IST
 				</span>
 			</div>
 		</header>
 
 		<!-- Article Title Header -->
-		<header class="space-y-3">
-			<h1 class="font-serif italic text-3xl sm:text-4xl font-semibold tracking-tight text-ctp-text leading-tight">
+		<header class="space-y-2.5 sm:space-y-3">
+			<h1 class="font-serif italic text-2xl sm:text-4xl font-semibold tracking-tight text-ctp-text leading-tight break-words">
 				{post.frontmatter.title}
 			</h1>
 
-			<div class="flex items-center gap-2 font-mono italic text-xs text-ctp-subtext0">
+			<div class="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono italic text-xs text-ctp-subtext0">
 				<span>{formatBlogDate(post.frontmatter.created)}</span>
 				<span class="text-ctp-surface1">•</span>
 				<span>{post.readTimeMinutes} min read</span>
@@ -56,13 +56,13 @@ const { post } = Astro.props;
 		</header>
 
 		<!-- Article Body (monospaced content) -->
-		<article class="prose max-w-none font-mono leading-relaxed text-ctp-text space-y-6">
+		<article class="prose max-w-none font-mono leading-relaxed text-ctp-text space-y-5 sm:space-y-6 min-w-0">
 			<div set:html={post.html} />
 		</article>
 
 		<!-- Post Footer (Tags & Last Updated at the end of the blog post) -->
-		<footer class="mt-8 flex flex-wrap items-center justify-between gap-4 font-mono italic text-xs text-ctp-subtext0">
-			<div class="flex flex-wrap items-center gap-2.5">
+		<footer class="mt-6 sm:mt-8 flex flex-wrap items-center justify-between gap-3 sm:gap-4 font-mono italic text-xs text-ctp-subtext0 border-t border-ctp-surface0/40 pt-4">
+			<div class="flex flex-wrap items-center gap-2">
 				{post.frontmatter.tags.map((tag) => (
 					<span class="text-ctp-subtext1">
 						#{tag}
@@ -78,18 +78,18 @@ const { post } = Astro.props;
 
 		<!-- Glossary Section (transparent & borderless) -->
 		{post.glossary.length > 0 && (
-			<section class="mt-12 space-y-6">
-				<h2 id="glossary" class="font-serif italic text-xl font-semibold text-[var(--color-accent)]">
+			<section class="mt-8 sm:mt-12 space-y-4 sm:space-y-6">
+				<h2 id="glossary" class="font-serif italic text-lg sm:text-xl font-semibold text-[var(--color-accent)]">
 					#glossary
 				</h2>
 
-				<div class="space-y-4">
+				<div class="space-y-3.5 sm:space-y-4">
 					{post.glossary.map((item) => (
-						<div class="space-y-1">
-							<div class="font-mono text-sm font-semibold text-[var(--color-accent)]">
+						<div class="space-y-1 min-w-0">
+							<div class="font-mono text-xs sm:text-sm font-semibold text-[var(--color-accent)]">
 								{item.term}
 							</div>
-							<div class="font-mono text-xs sm:text-sm text-ctp-text leading-relaxed" set:html={item.definitionHtml} />
+							<div class="font-mono text-xs sm:text-sm text-ctp-text leading-relaxed break-words" set:html={item.definitionHtml} />
 						</div>
 					))}
 				</div>
@@ -98,19 +98,19 @@ const { post } = Astro.props;
 
 		<!-- References & Footnotes Section (transparent & borderless) -->
 		{post.references.length > 0 && (
-			<section class="mt-12 space-y-6">
-				<h2 id="references" class="font-serif italic text-xl font-semibold text-[var(--color-accent)]">
+			<section class="mt-8 sm:mt-12 space-y-4 sm:space-y-6">
+				<h2 id="references" class="font-serif italic text-lg sm:text-xl font-semibold text-[var(--color-accent)]">
 					#references
 				</h2>
 
-				<ol class="space-y-4">
+				<ol class="space-y-3.5 sm:space-y-4">
 					{post.references.map((ref) => (
-						<li id={`fn-${ref.id}`} class="flex items-start gap-3 font-mono text-xs sm:text-sm">
+						<li id={`fn-${ref.id}`} class="flex items-start gap-2.5 sm:gap-3 font-mono text-xs sm:text-sm">
 							<span class="font-mono text-xs font-bold text-[var(--color-accent)] shrink-0 mt-0.5">
 								[{ref.label}]
 							</span>
-							<div class="space-y-2 flex-1">
-								<div class="leading-relaxed text-ctp-text" set:html={ref.contentHtml} />
+							<div class="space-y-2 flex-1 min-w-0">
+								<div class="leading-relaxed text-ctp-text break-words" set:html={ref.contentHtml} />
 							</div>
 							<a
 								href={`#fnref-${ref.id}`}
