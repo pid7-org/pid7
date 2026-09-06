@@ -36,7 +36,7 @@
 </div>
 
 <script>
-  const accents = ['mauve', 'blue', 'green', 'peach'];
+  const accents = ['mauve', 'blue', 'green', 'peach', 'mono'];
 
   function getStoredAccent(): string {
     const stored = localStorage.getItem('accent');
@@ -49,8 +49,8 @@
 
     const isLatte = document.documentElement.classList.contains('latte');
     const hexMap: Record<string, Record<string, string>> = {
-      dark: { mauve: '#cba6f7', blue: '#89b4fa', green: '#a6e3a1', peach: '#fab387' },
-      latte: { mauve: '#8839ef', blue: '#1e66f5', green: '#40a02b', peach: '#fe640b' }
+      dark: { mauve: '#cba6f7', blue: '#89b4fa', green: '#a6e3a1', peach: '#fab387', mono: '#cad3f5' },
+      latte: { mauve: '#8839ef', blue: '#1e66f5', green: '#40a02b', peach: '#fe640b', mono: '#4c4f69' }
     };
     const currentHexMap = isLatte ? hexMap.latte : hexMap.dark;
     const hex = currentHexMap[accentName] || currentHexMap.mauve;

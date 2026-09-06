@@ -18,12 +18,14 @@ html, html[data-accent="mauve"] { --color-accent: #cba6f7; }
 html[data-accent="blue"] { --color-accent: #89b4fa; }
 html[data-accent="green"] { --color-accent: #a6e3a1; }
 html[data-accent="peach"] { --color-accent: #fab387; }
+html[data-accent="mono"], html[data-accent="text"], html[data-accent="black"] { --color-accent: #cad3f5; }
 
 /* Explicit Catppuccin Accent Colors for Light (Latte) */
 html.latte, html.latte[data-accent="mauve"] { --color-accent: #8839ef; }
 html.latte[data-accent="blue"] { --color-accent: #1e66f5; }
 html.latte[data-accent="green"] { --color-accent: #40a02b; }
 html.latte[data-accent="peach"] { --color-accent: #fe640b; }
+html.latte[data-accent="mono"], html.latte[data-accent="text"], html.latte[data-accent="black"] { --color-accent: #4c4f69; }
 
 @layer base {
   :root {
