@@ -40,30 +40,15 @@ const { post } = Astro.props;
 			</div>
 		</header>
 
-		<!-- Navigation / Back link -->
-		<nav class="flex items-center justify-between font-mono text-xs border-b border-ctp-surface0/40 pb-3">
-			<a
-				href="/"
-				class="text-ctp-subtext0 hover:text-[var(--color-accent)] transition-colors flex items-center gap-1.5 font-medium"
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5">
-					<line x1="19" y1="12" x2="5" y2="12"></line>
-					<polyline points="12 19 5 12 12 5"></polyline>
-				</svg>
-				<span>back to home</span>
-			</a>
-			<span class="text-ctp-subtext0 select-none">{post.frontmatter.created}</span>
-		</nav>
-
 		<!-- Article Title Header -->
 		<header class="space-y-4">
-			<h1 class="font-serif text-2xl sm:text-3xl font-semibold tracking-tight text-ctp-text leading-tight">
+			<h1 class="font-serif italic text-3xl sm:text-4xl font-semibold tracking-tight text-ctp-text leading-tight">
 				{post.frontmatter.title}
 			</h1>
 
 			<div class="flex flex-wrap items-center gap-2 font-mono text-xs">
 				{post.frontmatter.tags.map((tag) => (
-					<span class="px-2 py-0.5 rounded bg-ctp-surface0/60 text-ctp-subtext1 border border-ctp-surface0/50">
+					<span class="px-2 py-0.5 rounded bg-ctp-surface0/60 text-ctp-subtext1">
 						#{tag}
 					</span>
 				))}
@@ -75,43 +60,41 @@ const { post } = Astro.props;
 			</div>
 		</header>
 
-		<!-- Article Body -->
-		<article class="prose max-w-none font-serif leading-relaxed text-ctp-text space-y-6">
+		<!-- Article Body (monospaced content) -->
+		<article class="prose max-w-none font-mono leading-relaxed text-ctp-text space-y-6">
 			<div set:html={post.html} />
 		</article>
 
-		<!-- Glossary Section (if present) -->
+		<!-- Glossary Section (no border & no @ prefix) -->
 		{post.glossary.length > 0 && (
 			<section class="mt-12 pt-8 border-t border-ctp-surface0/60 space-y-6">
-				<h2 id="glossary" class="font-serif text-xl font-semibold text-ctp-text flex items-center gap-2">
-					<span class="text-[var(--color-accent)] font-mono font-normal">@</span>
-					<span>Glossary</span>
+				<h2 id="glossary" class="font-serif text-xl font-semibold text-ctp-text">
+					Glossary
 				</h2>
 
 				<div class="grid grid-cols-1 gap-4">
 					{post.glossary.map((item) => (
-						<div class="p-4 rounded-lg border border-ctp-surface0/50 bg-ctp-mantle/40 space-y-1.5">
+						<div class="p-4 rounded-lg bg-ctp-mantle/40 space-y-1.5">
 							<div class="font-mono text-sm font-semibold text-[var(--color-accent)]">
 								{item.term}
 							</div>
-							<div class="font-serif text-sm text-ctp-text leading-relaxed" set:html={item.definitionHtml} />
+							<div class="font-mono text-xs sm:text-sm text-ctp-text leading-relaxed" set:html={item.definitionHtml} />
 						</div>
 					))}
 				</div>
 			</section>
 		)}
 
-		<!-- References & Footnotes Section (if present) -->
+		<!-- References & Footnotes Section (no border & no @ prefix) -->
 		{post.references.length > 0 && (
 			<section class="mt-12 pt-8 border-t border-ctp-surface0/60 space-y-6">
-				<h2 id="references" class="font-serif text-xl font-semibold text-ctp-text flex items-center gap-2">
-					<span class="text-[var(--color-accent)] font-mono font-normal">@</span>
-					<span>References</span>
+				<h2 id="references" class="font-serif text-xl font-semibold text-ctp-text">
+					References
 				</h2>
 
 				<ol class="space-y-4">
 					{post.references.map((ref) => (
-						<li id={`fn-${ref.id}`} class="p-4 rounded-lg border border-ctp-surface0/50 bg-ctp-mantle/30 flex items-start gap-3 font-serif text-sm">
+						<li id={`fn-${ref.id}`} class="p-4 rounded-lg bg-ctp-mantle/30 flex items-start gap-3 font-mono text-xs sm:text-sm">
 							<span class="font-mono text-xs font-bold text-[var(--color-accent)] shrink-0 mt-0.5">
 								[{ref.label}]
 							</span>

@@ -48,7 +48,6 @@ export function parseFrontmatter(markdown: string): { frontmatter: BlogFrontmatt
 }
 
 function renderMathInText(text: string): string {
-  // NOTE: Display math ($$) processed prior to inline math ($) to prevent substring collision
   let processed = text.replace(BLOCK_MATH_REGEX, (_, expr) => {
     try {
       return `<div class="katex-display-block">${katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false })}</div>`;
@@ -113,7 +112,6 @@ async function highlightCode(code: string, lang: string): Promise<string> {
       },
     });
   } catch {
-    // NOTE: Fallback for unsupported grammar aliases (e.g., raw asm dialect)
     try {
       return await codeToHtml(code.trim(), {
         lang: 'txt',
@@ -152,7 +150,8 @@ async function processCustomCodeBlocks(content: string): Promise<string> {
     }
 
     const highlighted = await highlightCode(codeStr, lang);
-    const descHtml = desc ? `<div class="code-desc font-mono text-xs text-ctp-subtext0 border-t border-ctp-surface0/60 pt-2 px-3 pb-2.5 bg-ctp-surface0/20 flex items-center gap-2"><span class="text-[var(--color-accent)] font-semibold select-none">@desc</span> ${parseSimpleMarkdownInline(desc)}</div>` : '';
+    // NOTE: Removed @desc prefix label from description output per design spec
+    const descHtml = desc ? `<div class="code-desc font-mono text-xs text-ctp-subtext0 border-t border-ctp-surface0/60 pt-2 px-3.5 pb-2.5 bg-ctp-surface0/20">${parseSimpleMarkdownInline(desc)}</div>` : '';
     const styleBadge = style === 'angle' ? '&lt;&gt;' : '~';
 
     return `<div class="custom-code-block custom-code-block-${style} my-6 rounded-lg border border-ctp-surface0 bg-ctp-mantle/60 overflow-hidden shadow-xs" data-block-style="${style}">
@@ -165,7 +164,6 @@ async function processCustomCodeBlocks(content: string): Promise<string> {
     </div>`;
   };
 
-  // Replace angle containers <> ... </>
   let result = content;
   const angleMatches = Array.from(content.matchAll(ANGLE_BLOCK_REGEX));
   for (const match of angleMatches) {
@@ -173,7 +171,6 @@ async function processCustomCodeBlocks(content: string): Promise<string> {
     result = result.replace(match[0], replacement);
   }
 
-  // Replace tilde containers ~ ... ~
   const tildeMatches = Array.from(result.matchAll(TILDE_BLOCK_REGEX));
   for (const match of tildeMatches) {
     const replacement = await replaceBlock(match[0], match[1], 'tilde');
@@ -210,7 +207,7 @@ function processCallouts(content: string): string {
         <span>${style.icon}</span>
         <span>${type}</span>
       </div>
-      <div class="callout-body font-serif text-sm leading-relaxed text-ctp-text">
+      <div class="callout-body font-mono text-sm leading-relaxed text-ctp-text">
         ${bodyHtml}
       </div>
     </div>`;
@@ -288,7 +285,6 @@ function parseReferences(referencesMarkdown: string): ReferenceItem[] {
 export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlogPost> {
   const { frontmatter, content: rawBody } = parseFrontmatter(rawMarkdown);
 
-  // NOTE: Extract @glossary and @references sections prior to body transformation
   const glossaryIdx = rawBody.indexOf('@glossary');
   const referencesIdx = rawBody.indexOf('@references');
 
@@ -319,16 +315,11 @@ export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlog
     }
   }
 
-  // 1. Process custom code blocks <> and ~
   let html = await processCustomCodeBlocks(bodyMarkdown);
-
-  // 2. Process callouts > [!TYPE]
   html = processCallouts(html);
-
-  // 3. Process animation placeholders {ANIM...}
   html = processAnimationTags(html);
 
-  // 4. Render headings with section sign § styling
+  // Headings retain font-serif
   html = html.replace(/^##\s+§\s+(.*)$/gm, (_, title) => {
     const id = slugify(title);
     return `<h2 id="${id}" class="font-serif text-xl sm:text-2xl font-semibold mt-10 mb-4 text-ctp-text flex items-center gap-2 group">
@@ -346,7 +337,7 @@ export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlog
     </h2>`;
   });
 
-  // 5. Process standard paragraphs and line breaks (preserving block elements)
+  // NOTE: Body paragraphs set to font-mono per design requirement
   const blocks = html.split(/\n\s*\n/);
   const processedBlocks = blocks.map((block) => {
     const trimmed = block.trim();
@@ -363,12 +354,11 @@ export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlog
     ) {
       return trimmed;
     }
-    return `<p class="font-serif text-base sm:text-lg leading-relaxed text-ctp-text my-4">${parseSimpleMarkdownInline(trimmed)}</p>`;
+    return `<p class="font-mono text-xs sm:text-sm leading-relaxed text-ctp-text my-4">${parseSimpleMarkdownInline(trimmed)}</p>`;
   });
 
   html = processedBlocks.filter(Boolean).join('\n\n');
 
-  // 6. Parse structured glossary and references
   const glossary = parseGlossary(glossaryMarkdown);
   const references = parseReferences(referencesMarkdown);
 

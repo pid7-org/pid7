@@ -38,11 +38,15 @@ html.latte[data-accent="peach"] { --color-accent: #fe640b; }
   }
 }
 
-/* Custom Typography (.prose) integration with Source Serif 4, JetBrains Mono & Catppuccin */
+/* Custom Typography (.prose) integration with JetBrains Mono (body), Source Serif 4 (headings) & Catppuccin */
 .prose {
-  font-family: var(--font-serif);
+  font-family: var(--font-mono);
   color: var(--color-ctp-text);
   max-width: 100%;
+}
+
+.prose p, .prose li, .prose blockquote, .prose div {
+  font-family: var(--font-mono);
 }
 
 .prose h1, .prose h2, .prose h3, .prose h4 {

@@ -56,10 +56,10 @@ describe('Custom Markdown Blog Parser Module', () => {
     expect(frontmatter.tags).toEqual(['Rust', 'SIMD', 'Test']);
   });
 
-  it('renders custom angle code blocks <> with @desc captions', async () => {
+  it('renders custom angle code blocks <> with captions', async () => {
     const parsed = await parseMarkdownBlog(SAMPLE_MARKDOWN);
     expect(parsed.html).toContain('custom-code-block-angle');
-    expect(parsed.html).toContain('@desc');
+    expect(parsed.html).not.toContain('@desc');
     expect(parsed.html).toContain('Assembly scan code snippet');
   });
 
