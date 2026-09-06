@@ -90,8 +90,8 @@ html.latte[data-accent="peach"] { --color-accent: #fe640b; }
 }
 
 .prose pre code {
-  background-color: transparent;
-  padding: 0;
+  background-color: transparent !important;
+  padding: 0 !important;
   color: inherit;
   font-size: 0.875em;
 }
@@ -102,15 +102,14 @@ html.latte[data-accent="peach"] { --color-accent: #fe640b; }
   font-style: italic;
 }
 
-/* KaTeX Display Styling */
+/* KaTeX Display Styling (Transparent Background & Borderless) */
 .katex-display-block {
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0;
   margin: 1.5rem 0;
-  background-color: color-mix(in srgb, var(--color-ctp-mantle) 80%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-ctp-surface0) 50%, transparent);
-  border-radius: 0.5rem;
+  background-color: transparent;
+  border: none;
   text-align: center;
 }
 
@@ -120,6 +119,11 @@ html.latte[data-accent="peach"] { --color-accent: #fe640b; }
   margin: 0 !important;
   padding: 0 !important;
   border: none !important;
+}
+
+.custom-code-block pre.shiki code {
+  background-color: transparent !important;
+  padding: 0 !important;
 }
 
 /* Callout Styling */

@@ -50,6 +50,8 @@ const { post } = Astro.props;
 				<span>{formatBlogDate(post.frontmatter.created)}</span>
 				<span class="text-ctp-surface1">•</span>
 				<span>{post.readTimeMinutes} min read</span>
+				<span class="text-ctp-surface1">•</span>
+				<span>{post.wordCount} words</span>
 			</div>
 		</header>
 
@@ -74,16 +76,16 @@ const { post } = Astro.props;
 			)}
 		</footer>
 
-		<!-- Glossary Section (no border & no @ prefix) -->
+		<!-- Glossary Section (transparent & borderless) -->
 		{post.glossary.length > 0 && (
 			<section class="mt-12 space-y-6">
-				<h2 id="glossary" class="font-serif text-xl font-semibold text-ctp-text">
-					Glossary
+				<h2 id="glossary" class="font-serif italic text-xl font-semibold text-[var(--color-accent)]">
+					#glossary
 				</h2>
 
-				<div class="grid grid-cols-1 gap-4">
+				<div class="space-y-4">
 					{post.glossary.map((item) => (
-						<div class="p-4 rounded-lg bg-ctp-mantle/40 space-y-1.5">
+						<div class="space-y-1">
 							<div class="font-mono text-sm font-semibold text-[var(--color-accent)]">
 								{item.term}
 							</div>
@@ -94,16 +96,16 @@ const { post } = Astro.props;
 			</section>
 		)}
 
-		<!-- References & Footnotes Section (no border & no @ prefix) -->
+		<!-- References & Footnotes Section (transparent & borderless) -->
 		{post.references.length > 0 && (
 			<section class="mt-12 space-y-6">
-				<h2 id="references" class="font-serif text-xl font-semibold text-ctp-text">
-					References
+				<h2 id="references" class="font-serif italic text-xl font-semibold text-[var(--color-accent)]">
+					#references
 				</h2>
 
 				<ol class="space-y-4">
 					{post.references.map((ref) => (
-						<li id={`fn-${ref.id}`} class="p-4 rounded-lg bg-ctp-mantle/30 flex items-start gap-3 font-mono text-xs sm:text-sm">
+						<li id={`fn-${ref.id}`} class="flex items-start gap-3 font-mono text-xs sm:text-sm">
 							<span class="font-mono text-xs font-bold text-[var(--color-accent)] shrink-0 mt-0.5">
 								[{ref.label}]
 							</span>
@@ -369,12 +371,36 @@ const { post } = Astro.props;
     clockEl.textContent = `${formatter.format(now)} IST`;
   }
 
+  function setupCopyButtons() {
+    document.querySelectorAll('.copy-code-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const encodedCode = btn.getAttribute('data-code');
+        let textToCopy = '';
+        if (encodedCode) {
+          textToCopy = decodeURIComponent(encodedCode);
+        } else {
+          const card = btn.closest('.custom-code-block');
+          const codeEl = card?.querySelector('.code-body pre code');
+          textToCopy = codeEl?.textContent || '';
+        }
+
+        try {
+          await navigator.clipboard.writeText(textToCopy);
+        } catch (err) {
+          console.error('Failed to copy code to clipboard', err);
+        }
+      });
+    });
+  }
+
   updateISTClock();
   setInterval(updateISTClock, 1000);
   renderAnimationWidgets();
+  setupCopyButtons();
 
   document.addEventListener('astro:after-swap', () => {
     updateISTClock();
     renderAnimationWidgets();
+    setupCopyButtons();
   });
 </script>
