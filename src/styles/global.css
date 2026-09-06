@@ -1,6 +1,7 @@
 @import "@fontsource/playwrite-de-sas/index.css";
 @import "@fontsource-variable/source-serif-4";
 @import "@fontsource-variable/jetbrains-mono";
+@import "katex/dist/katex.min.css";
 
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
@@ -41,7 +42,7 @@ html.latte[data-accent="peach"] { --color-accent: #fe640b; }
 .prose {
   font-family: var(--font-serif);
   color: var(--color-ctp-text);
-  max-width: 65ch;
+  max-width: 100%;
 }
 
 .prose h1, .prose h2, .prose h3, .prose h4 {
@@ -95,4 +96,29 @@ html.latte[data-accent="peach"] { --color-accent: #fe640b; }
   border-left-color: var(--color-accent);
   color: var(--color-ctp-subtext0);
   font-style: italic;
+}
+
+/* KaTeX Display Styling */
+.katex-display-block {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.75rem 1rem;
+  margin: 1.5rem 0;
+  background-color: color-mix(in srgb, var(--color-ctp-mantle) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-ctp-surface0) 50%, transparent);
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+/* Custom Code Block Highlighting Overrides */
+.custom-code-block pre.shiki {
+  background-color: transparent !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+/* Callout Styling */
+.callout {
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
