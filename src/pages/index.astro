@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
-import { getAllBlogPosts } from '../lib/blog';
+import { formatBlogDate, getAllBlogPosts } from '../lib/blog';
 
 const posts = await getAllBlogPosts();
 ---
@@ -40,7 +40,7 @@ const posts = await getAllBlogPosts();
 								{post.frontmatter.title}
 							</a>
 							<span class="shrink-0 font-mono text-xs text-ctp-subtext0 select-none">
-								{post.frontmatter.created}
+								{formatBlogDate(post.frontmatter.created)}
 							</span>
 						</li>
 					))}

@@ -22,5 +22,6 @@ export interface ParsedBlogPost {
   html: string;
   glossary: GlossaryItem[];
   references: ReferenceItem[];
+  readTimeMinutes: number;
   rawMarkdown: string;
 }

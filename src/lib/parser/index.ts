@@ -4,8 +4,8 @@ import type { BlogFrontmatter, GlossaryItem, ParsedBlogPost, ReferenceItem } fro
 
 // NOTE: Custom syntax pattern definitions for pid7 blog markdown dialect
 const FRONTMATTER_REGEX = /^---\r?\n([\s\S]*?)\r?\n---/;
-const ANGLE_BLOCK_REGEX = /<>\r?\n([\s\S]*?)\r?\n<\/>/g;
-const TILDE_BLOCK_REGEX = /~\r?\n([\s\S]*?)\r?\n~/g;
+const ANGLE_BLOCK_REGEX = /^<>\s*\r?\n([\s\S]*?)\r?\n^<\/>\s*$/gm;
+const TILDE_BLOCK_REGEX = /^~\s*\r?\n([\s\S]*?)\r?\n^~\s*$/gm;
 const CODE_FENCE_REGEX = /^```([a-zA-Z0-9_-]*)\r?\n([\s\S]*?)\r?\n```$/m;
 const ANIM_TAG_REGEX = /\{ANIM([A-Za-z0-9_]+):\s*([^}]+)\}/g;
 const CALLOUT_BLOCK_REGEX = /^>\s*\[!(INFO|TIP|NOTE|TASK|WARNING|CAUTION)\]\r?\n((?:^>.*(?:\r?\n|$))+)/gm;
@@ -50,9 +50,9 @@ export function parseFrontmatter(markdown: string): { frontmatter: BlogFrontmatt
 function renderMathInText(text: string): string {
   let processed = text.replace(BLOCK_MATH_REGEX, (_, expr) => {
     try {
-      return `<div class="katex-display-block">${katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false })}</div>`;
+      return `<div class="katex-display-block">${katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false })}</div>\n\n`;
     } catch {
-      return `<pre class="katex-error">${expr}</pre>`;
+      return `<pre class="katex-error">${expr}</pre>\n\n`;
     }
   });
 
@@ -88,12 +88,12 @@ function parseSimpleMarkdownInline(text: string): string {
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
 
   // Bold **text** or __text__
-  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+  html = html.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/__([\s\S]+?)__/g, '<strong>$1</strong>');
 
-  // Italic *text* or _text_
-  html = html.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
-  html = html.replace(/(?<!_)_([^_]+)_(?!_)/g, '<em>$1</em>');
+  // NOTE: Italic _text_ supports multiline paragraphs with soft line breaks
+  html = html.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em>$1</em>');
+  html = html.replace(/(?<![a-zA-Z0-9_])_([^_]+?)_(?![a-zA-Z0-9_])/g, '<em>$1</em>');
 
   // Links [label](url)
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
@@ -150,10 +150,10 @@ async function processCustomCodeBlocks(content: string): Promise<string> {
     }
 
     const highlighted = await highlightCode(codeStr, lang);
-    // NOTE: Removed @desc prefix label from description output per design spec
     const descHtml = desc ? `<div class="code-desc font-mono text-xs text-ctp-subtext0 border-t border-ctp-surface0/60 pt-2 px-3.5 pb-2.5 bg-ctp-surface0/20">${parseSimpleMarkdownInline(desc)}</div>` : '';
     const styleBadge = style === 'angle' ? '&lt;&gt;' : '~';
 
+    // NOTE: Append double newline to guarantee paragraph block separation in block splitting
     return `<div class="custom-code-block custom-code-block-${style} my-6 rounded-lg border border-ctp-surface0 bg-ctp-mantle/60 overflow-hidden shadow-xs" data-block-style="${style}">
       <div class="code-header flex items-center justify-between px-3.5 py-1.5 bg-ctp-surface0/30 border-b border-ctp-surface0/40 text-xs font-mono text-ctp-subtext0 select-none">
         <span class="font-bold text-[var(--color-accent)]">${styleBadge}</span>
@@ -161,7 +161,7 @@ async function processCustomCodeBlocks(content: string): Promise<string> {
       </div>
       <div class="code-body overflow-x-auto p-3 font-mono text-sm leading-relaxed">${highlighted}</div>
       ${descHtml}
-    </div>`;
+    </div>\n\n`;
   };
 
   let result = content;
@@ -202,6 +202,7 @@ function processCallouts(content: string): string {
 
     const style = typeColors[typeLower] || typeColors['info'];
 
+    // NOTE: Append double newline so callouts cleanly detach from subsequent paragraphs
     return `<div class="callout callout-${typeLower} my-6 p-4 rounded-r-lg border-l-4 ${style.border} ${style.bg} space-y-2">
       <div class="callout-header flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider ${style.text}">
         <span>${style.icon}</span>
@@ -210,7 +211,7 @@ function processCallouts(content: string): string {
       <div class="callout-body font-mono text-sm leading-relaxed text-ctp-text">
         ${bodyHtml}
       </div>
-    </div>`;
+    </div>\n\n`;
   });
 }
 
@@ -221,7 +222,7 @@ function processAnimationTags(content: string): string {
         <span class="text-[var(--color-accent)] font-semibold mb-1">Interactive Visualizer [ANIM${id}]</span>
         <span>${desc.trim()}</span>
       </div>
-    </div>`;
+    </div>\n\n`;
   });
 }
 
@@ -315,11 +316,18 @@ export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlog
     }
   }
 
+  const plainTextWords = bodyMarkdown
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/<[^>]+>/g, '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
+  const readTimeMinutes = Math.max(1, Math.ceil(plainTextWords / 200));
+
   let html = await processCustomCodeBlocks(bodyMarkdown);
   html = processCallouts(html);
   html = processAnimationTags(html);
 
-  // Headings retain font-serif
   html = html.replace(/^##\s+§\s+(.*)$/gm, (_, title) => {
     const id = slugify(title);
     return `<h2 id="${id}" class="font-serif text-xl sm:text-2xl font-semibold mt-10 mb-4 text-ctp-text flex items-center gap-2 group">
@@ -337,7 +345,6 @@ export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlog
     </h2>`;
   });
 
-  // NOTE: Body paragraphs set to font-mono per design requirement
   const blocks = html.split(/\n\s*\n/);
   const processedBlocks = blocks.map((block) => {
     const trimmed = block.trim();
@@ -367,6 +374,7 @@ export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlog
     html,
     glossary,
     references,
+    readTimeMinutes,
     rawMarkdown,
   };
 }

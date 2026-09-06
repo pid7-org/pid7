@@ -113,10 +113,12 @@ describe('Custom Markdown Blog Parser Module', () => {
     expect(parsed.frontmatter.created).toBe('02-09-2026');
     expect(parsed.frontmatter.lastUpdated).toBe('04-09-2026');
     expect(parsed.frontmatter.tags).toEqual(['Ashwa', 'SIMD', 'Rust', 'Search']);
+    expect(parsed.readTimeMinutes).toBeGreaterThan(0);
     expect(parsed.glossary.length).toBe(7);
     expect(parsed.references.length).toBe(4);
     expect(parsed.html).toContain('custom-code-block-angle');
     expect(parsed.html).toContain('custom-code-block-tilde');
+    expect(parsed.html).toContain('<em>For completely L1D cache-resident payloads');
     expect(parsed.html).toContain('data-anim-id="ANIM1"');
     expect(parsed.html).toContain('data-anim-id="ANIM2"');
     expect(parsed.html).toContain('data-anim-id="ANIM3"');

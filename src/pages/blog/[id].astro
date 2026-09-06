@@ -2,7 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import ThemeToggle from '../../components/ThemeToggle.astro';
 import AnimationWidget from '../../components/blog/AnimationWidget.astro';
-import { getAllBlogPosts, getBlogPostById } from '../../lib/blog';
+import { formatBlogDate, getAllBlogPosts, getBlogPostById } from '../../lib/blog';
 import type { ParsedBlogPost } from '../../lib/parser/types';
 
 export async function getStaticPaths() {
@@ -41,22 +41,15 @@ const { post } = Astro.props;
 		</header>
 
 		<!-- Article Title Header -->
-		<header class="space-y-4">
+		<header class="space-y-3">
 			<h1 class="font-serif italic text-3xl sm:text-4xl font-semibold tracking-tight text-ctp-text leading-tight">
 				{post.frontmatter.title}
 			</h1>
 
-			<div class="flex flex-wrap items-center gap-2 font-mono text-xs">
-				{post.frontmatter.tags.map((tag) => (
-					<span class="px-2 py-0.5 rounded bg-ctp-surface0/60 text-ctp-subtext1">
-						#{tag}
-					</span>
-				))}
-				{post.frontmatter.lastUpdated && post.frontmatter.lastUpdated !== post.frontmatter.created && (
-					<span class="text-ctp-subtext0 ml-auto select-none text-[11px]">
-						updated {post.frontmatter.lastUpdated}
-					</span>
-				)}
+			<div class="flex items-center gap-2 font-mono italic text-xs text-ctp-subtext0">
+				<span>{formatBlogDate(post.frontmatter.created)}</span>
+				<span class="text-ctp-surface1">•</span>
+				<span>{post.readTimeMinutes} min read</span>
 			</div>
 		</header>
 
@@ -65,9 +58,25 @@ const { post } = Astro.props;
 			<div set:html={post.html} />
 		</article>
 
+		<!-- Post Footer (Tags & Last Updated at the end of the blog post) -->
+		<footer class="mt-8 flex flex-wrap items-center justify-between gap-4 font-mono italic text-xs text-ctp-subtext0">
+			<div class="flex flex-wrap items-center gap-2.5">
+				{post.frontmatter.tags.map((tag) => (
+					<span class="text-ctp-subtext1">
+						#{tag}
+					</span>
+				))}
+			</div>
+			{post.frontmatter.lastUpdated && post.frontmatter.lastUpdated !== post.frontmatter.created && (
+				<span class="text-ctp-subtext0 text-[11px] select-none">
+					last updated on {formatBlogDate(post.frontmatter.lastUpdated)}
+				</span>
+			)}
+		</footer>
+
 		<!-- Glossary Section (no border & no @ prefix) -->
 		{post.glossary.length > 0 && (
-			<section class="mt-12 pt-8 border-t border-ctp-surface0/60 space-y-6">
+			<section class="mt-12 space-y-6">
 				<h2 id="glossary" class="font-serif text-xl font-semibold text-ctp-text">
 					Glossary
 				</h2>
@@ -87,7 +96,7 @@ const { post } = Astro.props;
 
 		<!-- References & Footnotes Section (no border & no @ prefix) -->
 		{post.references.length > 0 && (
-			<section class="mt-12 pt-8 border-t border-ctp-surface0/60 space-y-6">
+			<section class="mt-12 space-y-6">
 				<h2 id="references" class="font-serif text-xl font-semibold text-ctp-text">
 					References
 				</h2>

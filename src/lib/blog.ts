@@ -5,6 +5,33 @@ import type { ParsedBlogPost } from './parser/types';
 
 const BLOG_DIR = path.resolve(process.cwd(), 'src/content/blog');
 
+export function formatBlogDate(dateStr: string): string {
+  if (!dateStr) return '';
+  const parts = dateStr.split(/[-/]/);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  if (parts.length === 3) {
+    if (parts[2].length === 4) {
+      // DD-MM-YYYY format
+      const day = parseInt(parts[0], 10);
+      const monthIdx = parseInt(parts[1], 10) - 1;
+      const year = parts[2];
+      if (monthIdx >= 0 && monthIdx < 12 && !isNaN(day)) {
+        return `${months[monthIdx]} ${day}, ${year}`;
+      }
+    } else if (parts[0].length === 4) {
+      // YYYY-MM-DD format
+      const year = parts[0];
+      const monthIdx = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      if (monthIdx >= 0 && monthIdx < 12 && !isNaN(day)) {
+        return `${months[monthIdx]} ${day}, ${year}`;
+      }
+    }
+  }
+  return dateStr;
+}
+
 export async function getAllBlogPosts(): Promise<ParsedBlogPost[]> {
   try {
     const files = await fs.readdir(BLOG_DIR);
@@ -18,11 +45,11 @@ export async function getAllBlogPosts(): Promise<ParsedBlogPost[]> {
       posts.push(parsed);
     }
 
-    // Sort by created date descending (assuming DD-MM-YYYY format)
+    // Sort by created date descending
     return posts.sort((a, b) => {
       const parseDate = (dStr: string) => {
-        const parts = dStr.split('-');
-        if (parts.length === 3) {
+        const parts = dStr.split(/[-/]/);
+        if (parts.length === 3 && parts[2].length === 4) {
           return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0])).getTime();
         }
         return 0;
