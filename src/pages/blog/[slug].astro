@@ -8,7 +8,7 @@ import type { ParsedBlogPost } from '../../lib/parser/types';
 export async function getStaticPaths() {
   const posts = await getAllBlogPosts();
   return posts.map((post) => ({
-    params: { id: post.frontmatter.id },
+    params: { slug: post.frontmatter.slug },
     props: { post },
   }));
 }

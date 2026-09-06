@@ -1,5 +1,5 @@
 export interface BlogFrontmatter {
-  id: string;
+  slug: string;
   title: string;
   created: string;
   lastUpdated: string;

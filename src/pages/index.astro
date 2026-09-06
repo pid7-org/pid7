@@ -34,7 +34,7 @@ const posts = await getAllBlogPosts();
 					{posts.map((post) => (
 						<li class="group flex items-baseline justify-between gap-4 py-2 border-b border-ctp-surface0/40 last:border-0">
 							<a
-								href={`/blog/${post.frontmatter.id}`}
+								href={`/blog/${post.frontmatter.slug}`}
 								class="font-serif text-base text-ctp-text font-medium transition-colors group-hover:text-[var(--color-accent)] leading-snug"
 							>
 								{post.frontmatter.title}

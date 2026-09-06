@@ -61,7 +61,11 @@ export async function getAllBlogPosts(): Promise<ParsedBlogPost[]> {
   }
 }
 
-export async function getBlogPostById(id: string): Promise<ParsedBlogPost | undefined> {
+export async function getBlogPostBySlug(slug: string): Promise<ParsedBlogPost | undefined> {
   const posts = await getAllBlogPosts();
-  return posts.find((p) => p.frontmatter.id === id || p.frontmatter.id.toLowerCase() === id.toLowerCase());
+  return posts.find((p) => p.frontmatter.slug === slug || p.frontmatter.slug.toLowerCase() === slug.toLowerCase());
+}
+
+export async function getBlogPostById(id: string): Promise<ParsedBlogPost | undefined> {
+  return getBlogPostBySlug(id);
 }

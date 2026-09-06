@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { parseFrontmatter, parseMarkdownBlog } from '../index';
 
 const SAMPLE_MARKDOWN = `---
-id: test-post
+slug: test-post
 title: Unit Test Post Title
 created: 01-09-2026
 last-updated: 05-09-2026
@@ -49,7 +49,7 @@ $$
 describe('Custom Markdown Blog Parser Module', () => {
   it('correctly parses frontmatter properties', () => {
     const { frontmatter } = parseFrontmatter(SAMPLE_MARKDOWN);
-    expect(frontmatter.id).toBe('test-post');
+    expect(frontmatter.slug).toBe('test-post');
     expect(frontmatter.title).toBe('Unit Test Post Title');
     expect(frontmatter.created).toBe('01-09-2026');
     expect(frontmatter.lastUpdated).toBe('05-09-2026');
@@ -128,11 +128,11 @@ describe('Custom Markdown Blog Parser Module', () => {
     const fileContent = await fs.readFile(path.resolve(process.cwd(), 'src/content/blog/001.md'), 'utf-8');
     const parsed = await parseMarkdownBlog(fileContent);
 
-    expect(parsed.frontmatter.id).toBe('ashwa-devlog');
+    expect(parsed.frontmatter.slug).toBe('searching-150gb-text-per-second');
     expect(parsed.frontmatter.title).toBe('Searching through 150 GiB of Text per Second with SIMD');
     expect(parsed.frontmatter.created).toBe('02-09-2026');
     expect(parsed.frontmatter.lastUpdated).toBe('06-09-2026');
-    expect(parsed.frontmatter.tags).toEqual(['Ashwa', 'SIMD', 'Rust', 'Search']);
+    expect(parsed.frontmatter.tags).toEqual(['ashwa', 'simd', 'rust', 'substring-search']);
     expect(parsed.readTimeMinutes).toBeGreaterThan(0);
     expect(parsed.wordCount).toBeGreaterThan(0);
     expect(parsed.glossary.length).toBe(11);

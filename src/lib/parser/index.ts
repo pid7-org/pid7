@@ -36,11 +36,12 @@ export function parseFrontmatter(markdown: string): { frontmatter: BlogFrontmatt
     ? fields['tags'].split(',').map((t) => t.trim()).filter(Boolean)
     : [];
 
+  const rawSlug = fields['slug'] || fields['id'] || 'untitled';
   const frontmatter: BlogFrontmatter = {
-    id: fields['id'] || 'untitled',
-    title: fields['title'] || 'Untitled Post',
-    created: fields['created'] || '',
-    lastUpdated: fields['last-updated'] || fields['lastUpdated'] || fields['created'] || '',
+    slug: rawSlug.trim(),
+    title: (fields['title'] || 'Untitled Post').trim(),
+    created: (fields['created'] || '').trim(),
+    lastUpdated: (fields['last-updated'] || fields['lastUpdated'] || fields['created'] || '').trim(),
     tags,
   };
 
