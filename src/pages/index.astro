@@ -1,6 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
+import { getAllBlogPosts } from '../lib/blog';
+
+const posts = await getAllBlogPosts();
 ---
 
 <Layout title="pid7">
@@ -8,7 +11,7 @@ import ThemeToggle from '../components/ThemeToggle.astro';
 		<header class="flex items-start justify-between gap-6">
 			<div class="flex flex-col">
 				<h1 class="font-playwrite text-xl sm:text-2xl font-semibold tracking-tight transition-colors duration-300" style="color: var(--color-accent);">
-					pid7
+					<a href="/" class="hover:opacity-90">pid7</a>
 				</h1>
 				<p class="mt-2.5 font-mono text-xs sm:text-sm text-ctp-subtext0 tracking-wide leading-relaxed">
 					engineering ideas into reality
@@ -21,6 +24,29 @@ import ThemeToggle from '../components/ThemeToggle.astro';
 				</span>
 			</div>
 		</header>
+
+		{posts.length > 0 && (
+			<section>
+				<h2 class="mb-3 font-mono text-[11px] uppercase tracking-[0.16em] text-ctp-subtext0">
+					Writing
+				</h2>
+				<ul class="text-sm space-y-1">
+					{posts.map((post) => (
+						<li class="group flex items-baseline justify-between gap-4 py-2 border-b border-ctp-surface0/40 last:border-0">
+							<a
+								href={`/blog/${post.frontmatter.id}`}
+								class="font-serif text-base text-ctp-text font-medium transition-colors group-hover:text-[var(--color-accent)] leading-snug"
+							>
+								{post.frontmatter.title}
+							</a>
+							<span class="shrink-0 font-mono text-xs text-ctp-subtext0 select-none">
+								{post.frontmatter.created}
+							</span>
+						</li>
+					))}
+				</ul>
+			</section>
+		)}
 
 		<section>
 			<h2 class="mb-3 font-mono text-[11px] uppercase tracking-[0.16em] text-ctp-subtext0">
