@@ -45,11 +45,17 @@ export async function getAllBlogPosts(): Promise<ParsedBlogPost[]> {
 
     return posts.sort((a, b) => {
       const parseDate = (dStr: string) => {
+        if (!dStr) return 0;
         const parts = dStr.split(/[-/]/);
-        if (parts.length === 3 && parts[2].length === 4) {
-          return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0])).getTime();
+        if (parts.length === 3) {
+          if (parts[2].length === 4) {
+            return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0])).getTime();
+          } else if (parts[0].length === 4) {
+            return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])).getTime();
+          }
         }
-        return 0;
+        const t = new Date(dStr).getTime();
+        return isNaN(t) ? 0 : t;
       };
       return parseDate(b.frontmatter.created) - parseDate(a.frontmatter.created);
     });
