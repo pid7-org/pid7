@@ -376,12 +376,22 @@ export async function parseMarkdownBlog(rawMarkdown: string): Promise<ParsedBlog
     }
   }
 
-  const plainTextWords = bodyMarkdown
+  const proseTextOnly = bodyMarkdown
+    .replace(/^<>\s*[\s\S]*?^<\/>\s*$/gm, '')
+    .replace(/^~\s*[\s\S]*?^~\s*$/gm, '')
     .replace(/```[\s\S]*?```/g, '')
+    .replace(/\{@anim[\s\S]*?\}/g, '')
+    .replace(/\$\$[\s\S]*?\$\$/g, '')
+    .replace(/(?<!\\)\$[^\$\n]+?\$/g, '')
+    .replace(/^>\s*\[!.*?\]/gm, '')
     .replace(/<[^>]+>/g, '')
-    .trim()
+    .replace(/[^a-zA-Z0-9\s]/g, ' ')
+    .trim();
+
+  const plainTextWords = proseTextOnly
     .split(/\s+/)
-    .filter(Boolean).length;
+    .filter((w) => w.length > 0).length;
+
   const readTimeMinutes = Math.max(1, Math.ceil(plainTextWords / 200));
   const wordCount = plainTextWords;
 

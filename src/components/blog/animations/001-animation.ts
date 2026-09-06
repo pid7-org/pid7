@@ -9,7 +9,7 @@ export const Animation001 = {
 
           <!-- Real-time Logic Log Console -->
           <div class="p-3 rounded bg-ctp-crust/90 text-xs border border-ctp-surface0/40 space-y-1 font-mono">
-            <div class="flex justify-between items-center text-[11px] text-ctp-subtext0 border-b border-ctp-surface0/30 pb-1.5 mb-1.5 font-mono">
+            <div class="flex justify-between items-center text-xs text-ctp-subtext0 border-b border-ctp-surface0/30 pb-1.5 mb-1.5 font-mono">
               <span id="anim1-offset" class="font-semibold text-ctp-subtext1">Offset: 0 / 44</span>
               <span class="text-[var(--color-accent)] font-semibold">Throughput: ~2.14 GiB/s</span>
             </div>
@@ -22,7 +22,7 @@ export const Animation001 = {
           <div class="flex items-center justify-between border-t border-ctp-surface0/40 pt-3">
             <!-- Extreme Left: Needle Input -->
             <div class="flex items-center gap-1.5">
-              <label for="anim1-needle" class="text-[11px] text-ctp-subtext0 select-none font-semibold">Needle:</label>
+              <label for="anim1-needle" class="text-xs text-ctp-subtext0 select-none font-semibold">Needle:</label>
               <input
                 type="text"
                 id="anim1-needle"
@@ -54,7 +54,7 @@ export const Animation001 = {
             </div>
           </div>
         </div>
-        ${desc ? `<div class="anim-desc font-mono italic text-[10px] leading-normal text-ctp-subtext0 border-t border-ctp-surface0/60 pt-2 px-3.5 pb-2 bg-ctp-surface0/20">${desc}</div>` : ''}
+        ${desc ? `<div class="anim-desc font-mono italic text-xs leading-normal text-ctp-subtext0 border-t border-ctp-surface0/60 pt-2 px-3.5 pb-2 bg-ctp-surface0/20">${desc}</div>` : ''}
       </div>`;
   },
   init(wrapper: Element): void {
@@ -115,9 +115,9 @@ export const Animation001 = {
           cls += 'opacity-35 text-ctp-subtext0';
         } else if (idx === currentIndex) {
           if (isMatch) {
-            cls += 'bg-ctp-green/35 text-ctp-green font-bold ring-1 ring-ctp-green/70 rounded-xs px-[1px] z-10';
+            cls += 'bg-ctp-green/35 text-ctp-green font-bold ring-1 ring-ctp-green/70 rounded-xs px-0.5 z-10';
           } else {
-            cls += 'bg-[var(--color-accent)]/25 text-[var(--color-accent)] font-semibold rounded-xs px-[1px] z-10';
+            cls += 'bg-[var(--color-accent)]/25 text-[var(--color-accent)] font-semibold rounded-xs px-0.5 z-10';
           }
         } else {
           cls += 'text-ctp-text';

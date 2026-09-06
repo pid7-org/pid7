@@ -9,7 +9,7 @@ export const Animation002 = {
 
           <!-- Real-time SWAR Logic Console -->
           <div class="p-3 rounded bg-ctp-crust/90 text-xs border border-ctp-surface0/40 space-y-1 font-mono">
-            <div class="flex justify-between items-center text-[11px] text-ctp-subtext0 border-b border-ctp-surface0/30 pb-1.5 mb-1.5 font-mono">
+            <div class="flex justify-between items-center text-xs text-ctp-subtext0 border-b border-ctp-surface0/30 pb-1.5 mb-1.5 font-mono">
               <span id="anim2-offset" class="font-semibold text-ctp-subtext1">Chunk: 0 / 25 (Bytes 0..7)</span>
               <span class="text-[var(--color-accent)] font-semibold">Throughput: ~9.25 GiB/s (4.3x speedup)</span>
             </div>
@@ -22,7 +22,7 @@ export const Animation002 = {
           <div class="flex items-center justify-between border-t border-ctp-surface0/40 pt-3">
             <!-- Extreme Left: Needle Input -->
             <div class="flex items-center gap-1.5">
-              <label for="anim2-needle" class="text-[11px] text-ctp-subtext0 select-none font-semibold">Needle:</label>
+              <label for="anim2-needle" class="text-xs text-ctp-subtext0 select-none font-semibold">Needle:</label>
               <input
                 type="text"
                 id="anim2-needle"
@@ -54,7 +54,7 @@ export const Animation002 = {
             </div>
           </div>
         </div>
-        ${desc ? `<div class="anim-desc font-mono italic text-[10px] leading-normal text-ctp-subtext0 border-t border-ctp-surface0/60 pt-2 px-3.5 pb-2 bg-ctp-surface0/20">${desc}</div>` : ''}
+        ${desc ? `<div class="anim-desc font-mono italic text-xs leading-normal text-ctp-subtext0 border-t border-ctp-surface0/60 pt-2 px-3.5 pb-2 bg-ctp-surface0/20">${desc}</div>` : ''}
       </div>`;
   },
   init(wrapper: Element): void {
@@ -128,8 +128,8 @@ export const Animation002 = {
             cls += 'bg-[var(--color-accent)]/25 text-[var(--color-accent)] font-semibold ';
           }
 
-          if (isFirstInChunk) cls += 'rounded-l-sm pl-[1px] ';
-          if (isLastInChunk) cls += 'rounded-r-sm pr-[1px] ';
+          if (isFirstInChunk) cls += 'rounded-l-xs pl-0.5 ';
+          if (isLastInChunk) cls += 'rounded-r-xs pr-0.5 ';
         } else {
           cls += 'text-ctp-text';
         }

@@ -34,7 +34,7 @@ const { post } = Astro.props;
 			</div>
 			<div class="flex flex-col items-end gap-2.5 sm:gap-3 shrink-0">
 				<ThemeToggle />
-				<span id="ist-clock" class="font-mono text-[11px] sm:text-xs text-ctp-subtext0 select-none">
+				<span id="ist-clock" class="font-mono text-xs text-ctp-subtext0 select-none">
 					--:--:-- IST
 				</span>
 			</div>
@@ -70,7 +70,7 @@ const { post } = Astro.props;
 				))}
 			</div>
 			{post.frontmatter.lastUpdated && post.frontmatter.lastUpdated !== post.frontmatter.created && (
-				<span class="text-ctp-subtext0 text-[11px] select-none">
+				<span class="text-ctp-subtext0 text-xs select-none">
 					last updated on {formatBlogDate(post.frontmatter.lastUpdated)}
 				</span>
 			)}
