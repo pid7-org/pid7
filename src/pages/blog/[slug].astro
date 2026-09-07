@@ -18,14 +18,29 @@ interface Props {
 }
 
 const { post } = Astro.props;
+
+const excerpt = post.rawMarkdown
+  .replace(/^---[\s\S]*?---/, '')
+  .replace(/<[^>]*>/g, '')
+  .replace(/\{@[^}]*\}/g, '')
+  .replace(/\[\^[^\]]*\]/g, '')
+  .replace(/#+\s+/g, '')
+  .replace(/[\*\_`~]/g, '')
+  .replace(/\s+/g, ' ')
+  .trim()
+  .slice(0, 160);
 ---
 
-<Layout title={`${post.frontmatter.title} — pid7`}>
+<Layout
+  title={`${post.frontmatter.title} × pid7`}
+  description={excerpt || 'engineering ideas into reality'}
+  type="article"
+  publishedTime={post.frontmatter.created}
+  modifiedTime={post.frontmatter.lastUpdated}
+>
 	<main class="w-full max-w-screen-md mx-auto px-4 sm:px-6 py-8 sm:py-14 space-y-8 sm:space-y-10 min-w-0 overflow-hidden">
-		<!-- Main Site Header -->
 		<Header />
 
-		<!-- Article Title Header -->
 		<header class="space-y-2.5 sm:space-y-3">
 			<h1 class="font-serif italic text-2xl sm:text-4xl font-semibold tracking-tight text-ctp-text leading-tight break-words">
 				{post.frontmatter.title}
@@ -40,12 +55,10 @@ const { post } = Astro.props;
 			</div>
 		</header>
 
-		<!-- Article Body (monospaced content) -->
 		<article class="prose max-w-none font-mono leading-relaxed text-ctp-text space-y-5 sm:space-y-6 min-w-0">
 			<div set:html={post.html} />
 		</article>
 
-		<!-- Post Footer (Tags & Last Updated at the end of the blog post) -->
 		<footer class="mt-6 sm:mt-8 flex flex-wrap items-center justify-between gap-3 sm:gap-4 font-mono italic text-xs text-ctp-subtext0 border-t border-ctp-surface0/40 pt-4">
 			<div class="flex flex-wrap items-center gap-2">
 				{post.frontmatter.tags.map((tag) => (
@@ -61,7 +74,6 @@ const { post } = Astro.props;
 			)}
 		</footer>
 
-		<!-- Glossary Section (transparent & borderless) -->
 		{post.glossary.length > 0 && (
 			<section class="mt-8 sm:mt-12 space-y-4 sm:space-y-6">
 				<h2 id="glossary" class="font-serif italic text-lg sm:text-xl font-semibold text-[var(--color-accent)]">
@@ -81,7 +93,6 @@ const { post } = Astro.props;
 			</section>
 		)}
 
-		<!-- References & Footnotes Section (transparent & borderless) -->
 		{post.references.length > 0 && (
 			<section class="mt-8 sm:mt-12 space-y-4 sm:space-y-6">
 				<h2 id="references" class="font-serif italic text-lg sm:text-xl font-semibold text-[var(--color-accent)]">
@@ -112,7 +123,6 @@ const { post } = Astro.props;
 	</main>
 </Layout>
 
-<!-- Client Hydration Script for Interactive Animations -->
 <script>
   import { getAnimationWidget } from '../../components/blog/animations';
 

@@ -3,19 +3,87 @@ import '../styles/global.css';
 
 interface Props {
   title?: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  publishedTime?: string;
+  modifiedTime?: string;
 }
 
-const { title = 'pid7' } = Astro.props;
+const {
+  title = 'pid7 × engineering ideas into reality',
+  description = 'engineering ideas into reality',
+  image = '/web-app-manifest-512x512.png',
+  type = 'website',
+  publishedTime,
+  modifiedTime,
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || Astro.url.origin);
+const socialImageURL = new URL(image, Astro.site || Astro.url.origin);
+
+const jsonLd = type === 'article' ? {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  'headline': title,
+  'description': description,
+  'url': canonicalURL.toString(),
+  'datePublished': publishedTime,
+  'dateModified': modifiedTime || publishedTime,
+  'mainEntityOfPage': {
+    '@type': 'WebPage',
+    '@id': canonicalURL.toString()
+  }
+} : {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  'name': 'pid7',
+  'url': canonicalURL.toString(),
+  'description': description
+};
 ---
 <!doctype html>
 <html lang="en" class="dark macchiato" data-accent="mauve">
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>{title}</title>
+		<meta name="title" content={title} />
+		<meta name="description" content={description} />
+		<meta name="robots" content="index, follow" />
+		<link rel="canonical" href={canonicalURL} />
+		<link rel="sitemap" href="/sitemap.xml" />
+		<link rel="alternate" type="application/rss+xml" title="pid7 × engineering ideas into reality" href="/rss.xml" />
+
+		<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="shortcut icon" href="/favicon.ico" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+		<meta name="apple-mobile-web-app-title" content="pid7" />
+		<meta name="application-name" content="pid7" />
+		<meta name="theme-color" content="#24273a" />
+		<link rel="manifest" href="/site.webmanifest" />
+
+		<meta property="og:type" content={type} />
+		<meta property="og:url" content={canonicalURL} />
+		<meta property="og:site_name" content="pid7" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content={socialImageURL} />
+		<meta property="og:image:alt" content={title} />
+		{publishedTime && <meta property="article:published_time" content={publishedTime} />}
+		{modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:url" content={canonicalURL} />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={socialImageURL} />
+		<meta name="twitter:image:alt" content={title} />
+
+		<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+		<meta name="generator" content={Astro.generator} />
 		<script is:inline>
 			(function() {
 				const theme = (() => {
@@ -41,3 +109,4 @@ const { title = 'pid7' } = Astro.props;
 		<slot />
 	</body>
 </html>
+
