@@ -4,10 +4,8 @@ export const Animation003 = {
     return `
       <div class="blog-animation-card rounded-xl border border-ctp-surface0 bg-ctp-mantle/70 overflow-hidden shadow-xs font-mono">
         <div class="p-4 sm:p-5 space-y-4">
-          <!-- Haystack Text Canvas (Normal flowing paragraph text) -->
           <div class="p-3.5 rounded bg-ctp-crust border border-ctp-surface0/40 leading-relaxed text-sm tracking-wide whitespace-pre-wrap break-words select-none font-mono" id="anim3-haystack"></div>
 
-          <!-- Real-time AVX-512BW Logic Console -->
           <div class="p-3 rounded bg-ctp-crust/90 text-xs border border-ctp-surface0/40 space-y-1 font-mono">
             <div class="flex justify-between items-center text-xs text-ctp-subtext0 border-b border-ctp-surface0/30 pb-1.5 mb-1.5 font-mono">
               <span id="anim3-offset" class="font-semibold text-ctp-subtext1">Chunk: 0 / 4 (Bytes 0..63)</span>
@@ -18,9 +16,7 @@ export const Animation003 = {
             </div>
           </div>
 
-          <!-- Bottom Control Bar: Extreme Left = Needle, Extreme Right = Run & Reset -->
           <div class="flex items-center justify-between border-t border-ctp-surface0/40 pt-3">
-            <!-- Extreme Left: Needle Input -->
             <div class="flex items-center gap-1.5">
               <label for="anim3-needle" class="text-xs text-ctp-subtext0 select-none font-semibold">Needle:</label>
               <input
@@ -33,7 +29,6 @@ export const Animation003 = {
               />
             </div>
 
-            <!-- Extreme Right: Run & Reset Buttons -->
             <div class="flex items-center gap-2">
               <button
                 type="button"
