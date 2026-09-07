@@ -1,4 +1,4 @@
-[![Tests](https://github.com/pid7-org/pid7/actions/workflows/test.yml/badge.svg)](https://github.com/pid7-org/pid7/actions/workflows/test.yml)
+[![Tests](https://github.com/pid7-org/pid7/actions/workflows/test.yaml/badge.svg)](https://github.com/pid7-org/pid7/actions/workflows/tests.yaml)
 
 # pid7
 
