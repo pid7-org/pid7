@@ -68,6 +68,8 @@ const jsonLd = type === 'article' ? {
 		<title>{title}</title>
 		<meta name="title" content={title} />
 		<meta name="description" content={description} />
+		<meta name="author" content={author} />
+		{tags.length > 0 && <meta name="keywords" content={tags.join(', ')} />}
 		<meta name="robots" content="index, follow" />
 		<link rel="canonical" href={canonicalURL} />
 		<link rel="sitemap" href="/sitemap.xml" />
