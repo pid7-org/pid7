@@ -8,13 +8,14 @@ export const GET: APIRoute = async ({ site }) => {
   const items = posts.map((post) => {
     const pubDate = new Date(post.frontmatter.created).toUTCString();
     const desc = post.frontmatter.description || 'engineering ideas into reality';
+    const categories = (post.frontmatter.tags || []).map((t) => `      <category><![CDATA[${t}]]></category>`).join('\n');
     return `    <item>
       <title><![CDATA[${post.frontmatter.title}]]></title>
       <description><![CDATA[${desc}]]></description>
       <link>${baseUrl}/blog/${post.frontmatter.slug}</link>
       <guid isPermaLink="true">${baseUrl}/blog/${post.frontmatter.slug}</guid>
       <pubDate>${pubDate}</pubDate>
-    </item>`;
+${categories ? `${categories}\n` : ''}    </item>`;
   }).join('\n');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

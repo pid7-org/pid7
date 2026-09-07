@@ -57,7 +57,16 @@ const jsonLd = type === 'article' ? {
   '@type': 'WebSite',
   'name': 'pid7',
   'url': canonicalURL.toString(),
-  'description': description
+  'description': description,
+  'inLanguage': 'en-US',
+  'publisher': {
+    '@type': 'Organization',
+    'name': 'pid7',
+    'logo': {
+      '@type': 'ImageObject',
+      'url': new URL('/web-app-manifest-512x512.png', Astro.site || Astro.url.origin).toString()
+    }
+  }
 };
 ---
 <!doctype html>
@@ -71,6 +80,8 @@ const jsonLd = type === 'article' ? {
 		<meta name="author" content={author} />
 		{tags.length > 0 && <meta name="keywords" content={tags.join(', ')} />}
 		<meta name="robots" content="index, follow" />
+		<meta name="referrer" content="strict-origin-when-cross-origin" />
+		<meta name="format-detection" content="telephone=no" />
 		<link rel="canonical" href={canonicalURL} />
 		<link rel="sitemap" href="/sitemap.xml" />
 		<link rel="alternate" type="application/rss+xml" title="pid7 × engineering ideas into reality" href="/rss.xml" />
