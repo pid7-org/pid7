@@ -4,6 +4,7 @@ export interface BlogFrontmatter {
   created: string;
   lastUpdated: string;
   tags: string[];
+  description?: string;
 }
 
 export interface GlossaryItem {

@@ -7,8 +7,10 @@ export const GET: APIRoute = async ({ site }) => {
 
   const items = posts.map((post) => {
     const pubDate = new Date(post.frontmatter.created).toUTCString();
+    const desc = post.frontmatter.description || 'engineering ideas into reality';
     return `    <item>
       <title><![CDATA[${post.frontmatter.title}]]></title>
+      <description><![CDATA[${desc}]]></description>
       <link>${baseUrl}/blog/${post.frontmatter.slug}</link>
       <guid isPermaLink="true">${baseUrl}/blog/${post.frontmatter.slug}</guid>
       <pubDate>${pubDate}</pubDate>

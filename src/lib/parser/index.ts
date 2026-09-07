@@ -43,6 +43,7 @@ export function parseFrontmatter(markdown: string): { frontmatter: BlogFrontmatt
     created: (fields['created'] || '').trim(),
     lastUpdated: (fields['last-updated'] || fields['lastUpdated'] || fields['created'] || '').trim(),
     tags,
+    ...(fields['description'] ? { description: fields['description'].trim() } : {}),
   };
 
   return { frontmatter, content };

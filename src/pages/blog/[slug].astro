@@ -19,7 +19,7 @@ interface Props {
 
 const { post } = Astro.props;
 
-const excerpt = post.rawMarkdown
+const cleanContent = post.rawMarkdown
   .replace(/^---[\s\S]*?---/, '')
   .replace(/<[^>]*>/g, '')
   .replace(/\{@[^}]*\}/g, '')
@@ -27,16 +27,22 @@ const excerpt = post.rawMarkdown
   .replace(/#+\s+/g, '')
   .replace(/[\*\_`~]/g, '')
   .replace(/\s+/g, ' ')
-  .trim()
-  .slice(0, 160);
+  .trim();
+
+const fallbackExcerpt = cleanContent.length > 160
+  ? cleanContent.slice(0, 160).slice(0, Math.max(120, cleanContent.slice(0, 160).lastIndexOf(' '))) + '...'
+  : cleanContent;
+
+const pageDescription = post.frontmatter.description || fallbackExcerpt || 'engineering ideas into reality';
 ---
 
 <Layout
   title={`${post.frontmatter.title} × pid7`}
-  description={excerpt || 'engineering ideas into reality'}
+  description={pageDescription}
   type="article"
   publishedTime={post.frontmatter.created}
   modifiedTime={post.frontmatter.lastUpdated}
+  tags={post.frontmatter.tags}
 >
 	<main class="w-full max-w-screen-md mx-auto px-4 sm:px-6 py-8 sm:py-14 space-y-8 sm:space-y-10 min-w-0 overflow-hidden">
 		<Header />
