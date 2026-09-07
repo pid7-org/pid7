@@ -42,7 +42,7 @@ This repository contains **pid7**, a minimalist developer blog and portfolio bui
   - **Accents**: Mauve, Blue, Green, Peach
   - **Dynamic Tinting**: Background dynamically blends with active accent color via `color-mix()`.
 - **Typography (Fontsource)**:
-  - **Title / Logo**: `Playwrite DE SAS` (`var(--font-playwrite)`)
+  - **Title / Logo**: `Playwrite IN` (`var(--font-playwrite)`)
   - **Body / Blog / Prose**: `Source Serif 4 Variable` (`var(--font-serif)`)
   - **UI / Code / Metadata**: `JetBrains Mono Variable` (`var(--font-mono)`)
   - **Blog Articles**: Formatted using `@tailwindcss/typography` (`.prose`).

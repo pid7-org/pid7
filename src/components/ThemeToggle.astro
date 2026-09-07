@@ -46,16 +46,28 @@
     localStorage.setItem('accent', accentName);
 
     const isLatte = document.documentElement.classList.contains('latte');
-    const hexMap: Record<string, Record<string, string>> = {
-      dark: { mauve: '#cba6f7', blue: '#89b4fa', green: '#a6e3a1', peach: '#fab387', mono: '#cad3f5' },
-      latte: { mauve: '#8839ef', blue: '#1e66f5', green: '#40a02b', peach: '#fe640b', mono: '#4c4f69' }
+    const accentVarMap: Record<string, Record<string, string>> = {
+      dark: {
+        mauve: 'var(--ctp-macchiato-mauve)',
+        blue: 'var(--ctp-macchiato-blue)',
+        green: 'var(--ctp-macchiato-green)',
+        peach: 'var(--ctp-macchiato-peach)',
+        mono: 'var(--ctp-macchiato-text)'
+      },
+      latte: {
+        mauve: 'var(--ctp-latte-mauve)',
+        blue: 'var(--ctp-latte-blue)',
+        green: 'var(--ctp-latte-green)',
+        peach: 'var(--ctp-latte-peach)',
+        mono: 'var(--ctp-latte-text)'
+      }
     };
-    const currentHexMap = isLatte ? hexMap.latte : hexMap.dark;
-    const hex = currentHexMap[accentName] || currentHexMap.mauve;
+    const currentVarMap = isLatte ? accentVarMap.latte : accentVarMap.dark;
+    const accentVar = currentVarMap[accentName] || currentVarMap.mauve;
 
     const accentBtn = document.getElementById('accent-toggle');
     if (accentBtn) {
-      accentBtn.style.backgroundColor = hex;
+      accentBtn.style.backgroundColor = accentVar;
     }
   }
 
