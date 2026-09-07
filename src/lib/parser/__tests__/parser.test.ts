@@ -7,7 +7,8 @@ slug: dummy-unit-test-post
 title: Dummy Unit Test Post Title
 created: 01-09-2026
 last-updated: 05-09-2026
-tags: Rust, SIMD, Test
+description: Test post custom SEO description.
+tags: Rust, SIMD, substring-search
 ---
 
 Baseline introduction text with inline math $2^{30}$ bytes and citation[^1].
@@ -48,13 +49,14 @@ $$
 `;
 
 describe('Markdown Parser Unit Tests (Isolated Dummy Post)', () => {
-  it('correctly parses frontmatter properties', () => {
+  it('correctly parses frontmatter properties and converts tag hyphens to spaces', () => {
     const { frontmatter } = parseFrontmatter(DUMMY_MARKDOWN_POST);
     expect(frontmatter.slug).toBe('dummy-unit-test-post');
     expect(frontmatter.title).toBe('Dummy Unit Test Post Title');
     expect(frontmatter.created).toBe('01-09-2026');
     expect(frontmatter.lastUpdated).toBe('05-09-2026');
-    expect(frontmatter.tags).toEqual(['Rust', 'SIMD', 'Test']);
+    expect(frontmatter.description).toBe('Test post custom SEO description.');
+    expect(frontmatter.tags).toEqual(['Rust', 'SIMD', 'substring search']);
   });
 
   it('renders custom angle code blocks <> with captions', async () => {
