@@ -1,49 +1,60 @@
-# Project Guidelines — pid7
+# Repository Instructions — pid7
 
-This repository contains **pid7**, a minimalist developer blog and portfolio built with Astro, Tailwind CSS v4, Catppuccin themes, and Fontsource typography.
-
----
-
-## 1. Code Comment Guidelines
-
-- **Target Audience**: Always assume the code is being read by senior software engineers.
-- **No Low-Level / Beginner Comments**: Never state the obvious (e.g. `// render component`, `// increment i by 1`). Code should be self-documenting.
-- **High-Value Context Only**: Comments must explain non-obvious design choices, architectural rationale, browser/CSS quirks, performance considerations, or edge-case handling.
-- **Standard Alert Markers**: Use standardized uppercase markers when necessary:
-  - `NOTE:` Helpful architectural context or design rationale.
-  - `IMPORTANT:` Critical requirements or dependencies.
-  - `WARN:` Potential performance traps, race conditions, or browser incompatibilities.
-  - `ALERT:` High-risk logic or side-effects.
+**pid7** is a minimalist developer blog & portfolio built with Astro (v7 static), Tailwind CSS v4, Catppuccin themes, and Vitest.
 
 ---
 
-## 2. Git Commit Guidelines
+## 1. Core Workflow Commands
 
-- **Analyze History First**: Always inspect the past few commits (`git log -n 5`) to maintain repository conventions.
-- **Allowed Commit Labels**:
-  - `feat:` New features or capabilities
-  - `fix:` Bug fixes
-  - `setup:` Project configuration, dependencies, tooling
-  - `docs:` Documentation or guideline updates
-  - `anim:` Animations, micro-interactions, motion effects
-  - `content:` Writing, blog posts, markdown content
-  - `style:` Pure CSS/UI/layout design tweaks
-  - `refactor:` Code restructuring without behavioral changes
-- **Brevity & Context**: Keep commit messages concise, on-point, and focused (imperative mood, ~50 characters max). Avoid fluff or overly long paragraphs.
+- `npm run dev` — Launch local development server
+- `npm run build` — Build static site to `dist/`
+- `npm test` — Run Vitest unit test suite
 
 ---
 
-## 3. Tech Stack & Conventions
+## 2. Tech Stack & Styling Architecture
 
-- **Framework**: Astro (v7+) with static generation (`output: 'static'`).
-- **Styling**: Tailwind CSS v4 (`@import "tailwindcss"`) with `@catppuccin/tailwindcss` plugin.
-  - **Dark Mode (Default)**: Catppuccin Macchiato
-  - **Light Mode**: Catppuccin Latte
-  - **Accents**: Mauve, Blue, Green, Peach
-  - **Dynamic Tinting**: Background dynamically blends with active accent color via `color-mix()`.
-- **Typography (Fontsource)**:
-  - **Title / Logo**: `Playwrite IN` (`var(--font-playwrite)`)
-  - **Body / Blog / Prose**: `Source Serif 4 Variable` (`var(--font-serif)`)
-  - **UI / Code / Metadata**: `JetBrains Mono Variable` (`var(--font-mono)`)
-  - **Blog Articles**: Formatted using `@tailwindcss/typography` (`.prose`).
-- **Layout Grid**: Constrained layout width `max-w-screen-md` (`max-w-3xl` / 768px), centered with `mx-auto px-6`.
+- **Framework**: Astro (`output: 'static'`).
+- **Styling**: Tailwind CSS v4 + `@catppuccin/tailwindcss` + `@tailwindcss/typography`.
+  - **Themes**: Dark (Catppuccin Macchiato, default) / Light (Catppuccin Latte).
+  - **Accents**: `--color-accent` (`mauve`, `blue`, `green`, `peach`, `mono`).
+  - **Dynamic Tint**: Body background dynamically blends base color with active accent color via `color-mix()`.
+- **Fonts**:
+  - Logo/Header: `Playwrite IN` (`var(--font-playwrite)`)
+  - Headings: `Source Serif 4` (`var(--font-serif)`)
+  - Body/Code/UI: `JetBrains Mono` (`var(--font-mono)`)
+- **Layout**: Constrained width `max-w-screen-md` (`max-w-3xl`), centered with `mx-auto px-6`.
+
+---
+
+## 3. Blog Markdown Dialect (`src/lib/parser/`)
+
+Blog articles in `src/content/blog/*.md` are parsed by a custom engine ([src/lib/parser/index.ts](file:///home/adii/pid7/src/lib/parser/index.ts)):
+
+- **Frontmatter**:
+  ```yaml
+  ---
+  slug: post-slug
+  title: Post Title
+  created: DD-MM-YYYY
+  last-updated: DD-MM-YYYY
+  description: SEO description summary
+  tags: Tag-One, Tag-Two  # Hyphens auto-converted to spaces ('Tag One')
+  ---
+  ```
+- **Custom Code Blocks**: `<> ... </>` (angle) or `~ ... ~` (tilde).
+  - Add optional caption line `@desc Caption text` inside the block before closing.
+  - Automatically highlights using Shiki (`catppuccin-macchiato` / `catppuccin-latte`) with copy buttons.
+- **Interactive Animations**: `{@anim (001) Description}` or `{ANIM001: Description}` rendering dynamic widget placeholders.
+- **Callouts**: `> [!INFO]`, `> [!TIP]`, `> [!NOTE]`, `> [!WARNING]`, `> [!CAUTION]`.
+- **LaTeX Math (KaTeX)**: Display `$$ ... $$` and Inline `$ ... $`.
+- **Glossary & References**:
+  - `@glossary` section using `* TERM: Definition` list items.
+  - `@references` section using `[^1]: Citation text`.
+
+---
+
+## 4. Code & Commit Conventions
+
+- **Code Comments**: High-value architectural rationale only. Standard alert markers: `NOTE:`, `IMPORTANT:`, `WARN:`, `ALERT:`.
+- **Git Commits**: Imperative mood, ~50 chars. Prefixes: `feat:`, `fix:`, `style:`, `refactor:`, `anim:`, `content:`, `setup:`, `docs:`.
