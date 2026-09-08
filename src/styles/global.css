@@ -1,5 +1,5 @@
 @import "@fontsource-variable/playwrite-us-trad";
-@import "@fontsource-variable/source-serif-4";
+@import "@fontsource-variable/space-grotesk";
 @import "@fontsource-variable/jetbrains-mono";
 @import "katex/dist/katex.min.css";
 
@@ -10,7 +10,7 @@
 
 @theme {
   --font-playwrite: "Playwrite US Trad Variable", "Playwrite US Trad", cursive, sans-serif;
-  --font-serif: "Source Serif 4 Variable", "Source Serif 4", Georgia, serif;
+  --font-serif: "Space Grotesk Variable", "Space Grotesk", sans-serif;
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
