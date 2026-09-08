@@ -15,17 +15,17 @@
 }
 
 /* Explicit Catppuccin Accent Colors for Dark (Macchiato) */
-html, html[data-accent="mauve"] { --color-accent: var(--ctp-macchiato-mauve); }
+html, html[data-accent="peach"] { --color-accent: var(--ctp-macchiato-peach); }
+html[data-accent="mauve"] { --color-accent: var(--ctp-macchiato-mauve); }
 html[data-accent="blue"] { --color-accent: var(--ctp-macchiato-blue); }
 html[data-accent="green"] { --color-accent: var(--ctp-macchiato-green); }
-html[data-accent="peach"] { --color-accent: var(--ctp-macchiato-peach); }
 html[data-accent="mono"], html[data-accent="text"], html[data-accent="black"] { --color-accent: var(--ctp-macchiato-text); }
 
 /* Explicit Catppuccin Accent Colors for Light (Latte) */
-html.latte, html.latte[data-accent="mauve"] { --color-accent: var(--ctp-latte-mauve); }
+html.latte, html.latte[data-accent="peach"] { --color-accent: var(--ctp-latte-peach); }
+html.latte[data-accent="mauve"] { --color-accent: var(--ctp-latte-mauve); }
 html.latte[data-accent="blue"] { --color-accent: var(--ctp-latte-blue); }
 html.latte[data-accent="green"] { --color-accent: var(--ctp-latte-green); }
-html.latte[data-accent="peach"] { --color-accent: var(--ctp-latte-peach); }
 html.latte[data-accent="mono"], html.latte[data-accent="text"], html.latte[data-accent="black"] { --color-accent: var(--ctp-latte-text); }
 
 @layer base {

@@ -34,11 +34,11 @@
 </div>
 
 <script>
-  const accents = ['mauve', 'blue', 'green', 'peach', 'mono'];
+  const accents = ['peach', 'mauve', 'blue', 'green', 'mono'];
 
   function getStoredAccent(): string {
     const stored = localStorage.getItem('accent');
-    return stored && accents.includes(stored) ? stored : 'mauve';
+    return stored && accents.includes(stored) ? stored : 'peach';
   }
 
   function applyAccent(accentName: string) {
@@ -48,22 +48,22 @@
     const isLatte = document.documentElement.classList.contains('latte');
     const accentVarMap: Record<string, Record<string, string>> = {
       dark: {
+        peach: 'var(--ctp-macchiato-peach)',
         mauve: 'var(--ctp-macchiato-mauve)',
         blue: 'var(--ctp-macchiato-blue)',
         green: 'var(--ctp-macchiato-green)',
-        peach: 'var(--ctp-macchiato-peach)',
         mono: 'var(--ctp-macchiato-text)'
       },
       latte: {
+        peach: 'var(--ctp-latte-peach)',
         mauve: 'var(--ctp-latte-mauve)',
         blue: 'var(--ctp-latte-blue)',
         green: 'var(--ctp-latte-green)',
-        peach: 'var(--ctp-latte-peach)',
         mono: 'var(--ctp-latte-text)'
       }
     };
     const currentVarMap = isLatte ? accentVarMap.latte : accentVarMap.dark;
-    const accentVar = currentVarMap[accentName] || currentVarMap.mauve;
+    const accentVar = currentVarMap[accentName] || currentVarMap.peach;
 
     const accentBtn = document.getElementById('accent-toggle');
     if (accentBtn) {

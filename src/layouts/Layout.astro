@@ -70,7 +70,7 @@ const jsonLd = type === 'article' ? {
 };
 ---
 <!doctype html>
-<html lang="en" class="dark macchiato" data-accent="mauve">
+<html lang="en" class="dark macchiato" data-accent="peach">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -136,7 +136,7 @@ const jsonLd = type === 'article' ? {
 					document.documentElement.classList.add('dark', 'macchiato');
 				}
 
-				const accent = (typeof localStorage !== 'undefined' && localStorage.getItem('accent')) || 'mauve';
+				const accent = (typeof localStorage !== 'undefined' && localStorage.getItem('accent')) || 'peach';
 				document.documentElement.setAttribute('data-accent', accent);
 			})();
 		</script>
