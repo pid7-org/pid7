@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
 import AnimationWidget from '../../components/blog/AnimationWidget.astro';
 import { formatBlogDate, getAllBlogPosts, getBlogPostById } from '../../lib/blog';
 import type { ParsedBlogPost } from '../../lib/parser/types';
@@ -45,6 +46,10 @@ const pageDescription = post.frontmatter.description || fallbackExcerpt || 'engi
   tags={post.frontmatter.tags}
 >
 	<main class="w-full max-w-screen-md mx-auto px-4 sm:px-6 py-8 sm:py-14 space-y-8 sm:space-y-10 min-w-0 overflow-hidden">
+		<div class="hidden sm:flex fixed top-[28vh] left-0 right-0 pointer-events-none z-20 border-b border-dashed border-[var(--color-accent)]/25 items-center justify-end px-4 sm:px-8 select-none">
+			<span class="font-mono text-[9px] text-[var(--color-accent)]/60 uppercase tracking-widest">eyeline</span>
+		</div>
+
 		<Header />
 
 		<header class="space-y-2.5 sm:space-y-3">
@@ -65,7 +70,7 @@ const pageDescription = post.frontmatter.description || fallbackExcerpt || 'engi
 			<div set:html={post.html} />
 		</article>
 
-		<footer class="mt-6 sm:mt-8 flex flex-wrap items-center justify-between gap-3 sm:gap-4 font-mono italic text-xs text-ctp-subtext0 border-t border-ctp-surface0/40 pt-4">
+		<div class="mt-6 sm:mt-8 flex flex-wrap items-center justify-between gap-3 sm:gap-4 font-mono italic text-xs text-ctp-subtext0 border-t border-ctp-surface0/40 pt-4">
 			<div class="flex flex-wrap items-center gap-2">
 				{post.frontmatter.tags.map((tag) => (
 					<span class="text-ctp-subtext1">
@@ -78,7 +83,7 @@ const pageDescription = post.frontmatter.description || fallbackExcerpt || 'engi
 					last updated on {formatBlogDate(post.frontmatter.lastUpdated)}
 				</span>
 			)}
-		</footer>
+		</div>
 
 		{post.glossary.length > 0 && (
 			<section class="mt-8 sm:mt-12 space-y-4 sm:space-y-6">
@@ -126,6 +131,10 @@ const pageDescription = post.frontmatter.description || fallbackExcerpt || 'engi
 				</ol>
 			</section>
 		)}
+
+		<div class="h-[40vh]"></div>
+
+		<Footer />
 	</main>
 </Layout>
 
