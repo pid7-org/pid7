@@ -34,7 +34,7 @@
 </div>
 
 <script>
-  const accents = ['peach', 'mauve', 'blue', 'green', 'mono'];
+  const accents = ['peach', 'mono', 'yellow', 'mauve', 'blue', 'green'];
 
   function getStoredAccent(): string {
     const stored = localStorage.getItem('accent');
@@ -49,17 +49,19 @@
     const accentVarMap: Record<string, Record<string, string>> = {
       dark: {
         peach: 'var(--ctp-macchiato-peach)',
+        mono: 'var(--ctp-macchiato-text)',
+        yellow: 'var(--ctp-macchiato-yellow)',
         mauve: 'var(--ctp-macchiato-mauve)',
         blue: 'var(--ctp-macchiato-blue)',
-        green: 'var(--ctp-macchiato-green)',
-        mono: 'var(--ctp-macchiato-text)'
+        green: 'var(--ctp-macchiato-green)'
       },
       latte: {
         peach: 'var(--ctp-latte-peach)',
+        mono: 'var(--ctp-latte-text)',
+        yellow: 'var(--ctp-latte-yellow)',
         mauve: 'var(--ctp-latte-mauve)',
         blue: 'var(--ctp-latte-blue)',
-        green: 'var(--ctp-latte-green)',
-        mono: 'var(--ctp-latte-text)'
+        green: 'var(--ctp-latte-green)'
       }
     };
     const currentVarMap = isLatte ? accentVarMap.latte : accentVarMap.dark;

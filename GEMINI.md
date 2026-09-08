@@ -17,7 +17,7 @@
 - **Framework**: Astro (`output: 'static'`).
 - **Styling**: Tailwind CSS v4 + `@catppuccin/tailwindcss` + `@tailwindcss/typography`.
   - **Themes**: Dark (Catppuccin Macchiato, default) / Light (Catppuccin Latte).
-  - **Accents**: `--color-accent` (`peach`, default / `mauve`, `blue`, `green`, `mono`).
+  - **Accents**: `--color-accent` (`peach`, default / `mono`, `yellow`, `mauve`, `blue`, `green`).
   - **Dynamic Tint**: Body background dynamically blends base color with active accent color via `color-mix()`.
 - **Fonts**:
   - Logo/Header: `Playwrite US Trad` (`var(--font-playwrite)`)
