@@ -1,4 +1,4 @@
-@import "@fontsource/playwrite-in/index.css";
+@import "@fontsource-variable/playwrite-us-trad";
 @import "@fontsource-variable/source-serif-4";
 @import "@fontsource-variable/jetbrains-mono";
 @import "katex/dist/katex.min.css";
@@ -9,7 +9,7 @@
 @import "@catppuccin/tailwindcss/macchiato.css";
 
 @theme {
-  --font-playwrite: "Playwrite IN", cursive, sans-serif;
+  --font-playwrite: "Playwrite US Trad Variable", "Playwrite US Trad", cursive, sans-serif;
   --font-serif: "Source Serif 4 Variable", "Source Serif 4", Georgia, serif;
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }

@@ -20,7 +20,7 @@
   - **Accents**: `--color-accent` (`mauve`, `blue`, `green`, `peach`, `mono`).
   - **Dynamic Tint**: Body background dynamically blends base color with active accent color via `color-mix()`.
 - **Fonts**:
-  - Logo/Header: `Playwrite IN` (`var(--font-playwrite)`)
+  - Logo/Header: `Playwrite US Trad` (`var(--font-playwrite)`)
   - Headings: `Source Serif 4` (`var(--font-serif)`)
   - Body/Code/UI: `JetBrains Mono` (`var(--font-mono)`)
 - **Layout**: Constrained width `max-w-screen-md` (`max-w-3xl`), centered with `mx-auto px-6`.
