@@ -1,0 +1,161 @@
+{
+  "generated_at": "2026-09-09T15:46:03.836Z",
+  "total_repos_scanned": 11,
+  "projects": [
+    {
+      "name": "turbofox",
+      "nameWithOwner": "pid7-org/turbofox",
+      "desc": "A persistent and efficient embedded KV database",
+      "url": "https://github.com/pid7-org/turbofox",
+      "stars": 1,
+      "forks": 0,
+      "language": "Rust",
+      "languageColor": "#dea584",
+      "languages": [
+        {
+          "name": "Rust",
+          "color": "#dea584",
+          "bytes": 41066
+        },
+        {
+          "name": "Nix",
+          "color": "#7e7eff",
+          "bytes": 493
+        }
+      ],
+      "commits": 503,
+      "releases": 2,
+      "pullRequests": 1,
+      "issues": 1,
+      "contributions": 507
+    },
+    {
+      "name": "frozen-core",
+      "nameWithOwner": "pid7-org/frozen-core",
+      "desc": "Core utilities for frozen codebases.",
+      "url": "https://github.com/pid7-org/frozen-core",
+      "stars": 0,
+      "forks": 0,
+      "language": "Rust",
+      "languageColor": "#dea584",
+      "languages": [
+        {
+          "name": "Rust",
+          "color": "#dea584",
+          "bytes": 355572
+        },
+        {
+          "name": "Nix",
+          "color": "#7e7eff",
+          "bytes": 493
+        }
+      ],
+      "commits": 359,
+      "releases": 31,
+      "pullRequests": 43,
+      "issues": 53,
+      "contributions": 486
+    },
+    {
+      "name": "ashwa",
+      "nameWithOwner": "pid7-org/ashwa",
+      "desc": "Hardware accelerated routines for single substring search.",
+      "url": "https://github.com/pid7-org/ashwa",
+      "stars": 3,
+      "forks": 0,
+      "language": "Rust",
+      "languageColor": "#dea584",
+      "languages": [
+        {
+          "name": "Rust",
+          "color": "#dea584",
+          "bytes": 236385
+        },
+        {
+          "name": "JavaScript",
+          "color": "#f1e05a",
+          "bytes": 122055
+        },
+        {
+          "name": "Python",
+          "color": "#3572A5",
+          "bytes": 56738
+        },
+        {
+          "name": "Shell",
+          "color": "#89e051",
+          "bytes": 48825
+        },
+        {
+          "name": "HCL",
+          "color": "#844FBA",
+          "bytes": 5580
+        },
+        {
+          "name": "C",
+          "color": "#555555",
+          "bytes": 1621
+        }
+      ],
+      "commits": 265,
+      "releases": 6,
+      "pullRequests": 0,
+      "issues": 0,
+      "contributions": 271
+    },
+    {
+      "name": "kosa",
+      "nameWithOwner": "pid7-org/kosa",
+      "desc": "A reliable page-based storage engine with fire-and-forget durability semantics",
+      "url": "https://github.com/pid7-org/kosa",
+      "stars": 1,
+      "forks": 0,
+      "language": "Rust",
+      "languageColor": "#dea584",
+      "languages": [
+        {
+          "name": "Rust",
+          "color": "#dea584",
+          "bytes": 59466
+        },
+        {
+          "name": "Nix",
+          "color": "#7e7eff",
+          "bytes": 493
+        }
+      ],
+      "commits": 129,
+      "releases": 3,
+      "pullRequests": 2,
+      "issues": 2,
+      "contributions": 136
+    },
+    {
+      "name": "rta",
+      "nameWithOwner": "pid7-org/rta",
+      "desc": "Ṛta (ऋत) is a minimal metadata store for durable system state",
+      "url": "https://github.com/pid7-org/rta",
+      "stars": 0,
+      "forks": 0,
+      "language": "Rust",
+      "languageColor": "#dea584",
+      "languages": [
+        {
+          "name": "Rust",
+          "color": "#dea584",
+          "bytes": 49183
+        },
+        {
+          "name": "Nix",
+          "color": "#7e7eff",
+          "bytes": 491
+        }
+      ],
+      "commits": 81,
+      "releases": 2,
+      "pullRequests": 2,
+      "issues": 1,
+      "contributions": 86
+    }
+  ]
+}
