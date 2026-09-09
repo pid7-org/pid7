@@ -1,0 +1,239 @@
+---
+import activityData from '../assets/gh-activity.json';
+
+interface Bucket {
+  commits: number;
+  pull_requests: number;
+  reviews: number;
+  issues: number;
+  discussions: number;
+  releases: number;
+  total: number;
+}
+
+const year = activityData.year || 2026;
+const activityMap = (activityData.activity || {}) as Record<string, Bucket>;
+
+let totalCommits = 0;
+let totalPRs = 0;
+let totalIssues = 0;
+let totalReleases = 0;
+
+for (const b of Object.values(activityMap)) {
+  totalCommits += b.commits;
+  totalPRs += b.pull_requests;
+  totalIssues += b.issues;
+  totalReleases += b.releases;
+}
+
+// Construct 53 weeks grid (Sunday to Saturday)
+const jan1 = new Date(Date.UTC(year, 0, 1));
+const dayOfWeekJan1 = jan1.getUTCDay();
+const startDate = new Date(Date.UTC(year, 0, 1 - dayOfWeekJan1));
+
+const dec31 = new Date(Date.UTC(year, 11, 31));
+const dayOfWeekDec31 = dec31.getUTCDay();
+const endDate = new Date(Date.UTC(year, 11, 31 + (6 - dayOfWeekDec31)));
+
+interface DayCell {
+  dateStr: string;
+  isCurrentYear: boolean;
+  bucket: Bucket;
+  level: number;
+  formattedDate: string;
+}
+
+const weeks: DayCell[][] = [];
+let currentWeek: DayCell[] = [];
+
+let curr = new Date(startDate.getTime());
+while (curr <= endDate) {
+  const dateStr = curr.toISOString().slice(0, 10);
+  const isCurrentYear = curr.getUTCFullYear() === year;
+  const bucket = activityMap[dateStr] || {
+    commits: 0,
+    pull_requests: 0,
+    reviews: 0,
+    issues: 0,
+    discussions: 0,
+    releases: 0,
+    total: 0,
+  };
+
+  let level = 0;
+  if (bucket.total >= 15) level = 4;
+  else if (bucket.total >= 8) level = 3;
+  else if (bucket.total >= 4) level = 2;
+  else if (bucket.total >= 1) level = 1;
+
+  const formattedDate = curr.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+
+  currentWeek.push({
+    dateStr,
+    isCurrentYear,
+    bucket,
+    level,
+    formattedDate,
+  });
+
+  if (currentWeek.length === 7) {
+    weeks.push(currentWeek);
+    currentWeek = [];
+  }
+
+  curr.setUTCDate(curr.getUTCDate() + 1);
+}
+
+const statsSummary = [
+  `${totalCommits.toLocaleString()} commits`,
+  `${totalPRs.toLocaleString()} pull requests`,
+  `${totalIssues.toLocaleString()} issues`,
+  `${totalReleases.toLocaleString()} releases`,
+].join(' • ');
+---
+
+<section class="w-full">
+  <h2 class="mb-3 font-mono text-xs uppercase tracking-widest text-ctp-subtext0">
+    GITHUB
+  </h2>
+
+  <div class="relative group/graph w-full">
+    {/* Fluid Responsive Grid Spanning 53 Weeks */}
+    <div class="w-full overflow-x-auto pb-1 scrollbar-thin">
+      <div class="min-w-[640px] w-full">
+        <div class="grid grid-cols-[repeat(53,minmax(0,1fr))] gap-[2.5px] w-full">
+          {weeks.map((week) => (
+            <div class="flex flex-col gap-[2.5px] w-full">
+              {week.map((day) => {
+                const titleText = `${day.bucket.total} contribution${day.bucket.total === 1 ? '' : 's'} on ${day.formattedDate} (${day.bucket.commits} commits, ${day.bucket.pull_requests} PRs, ${day.bucket.issues} issues, ${day.bucket.releases} releases)`;
+
+                return (
+                  <div
+                    tabindex="0"
+                    aria-label={titleText}
+                    data-date={day.formattedDate}
+                    data-total={day.bucket.total}
+                    data-commits={day.bucket.commits}
+                    data-prs={day.bucket.pull_requests}
+                    data-issues={day.bucket.issues}
+                    data-releases={day.bucket.releases}
+                    class:list={[
+                      'w-full aspect-square transition-colors duration-150 relative day-cell cursor-pointer rounded-[1px]',
+                      !day.isCurrentYear && 'opacity-20 pointer-events-none',
+                      day.isCurrentYear && day.level === 0 && 'bg-ctp-surface0/50 hover:bg-ctp-surface0/90',
+                      day.isCurrentYear && day.level === 1 && 'bg-[var(--color-accent)]/25 hover:bg-[var(--color-accent)]/40',
+                      day.isCurrentYear && day.level === 2 && 'bg-[var(--color-accent)]/50 hover:bg-[var(--color-accent)]/65',
+                      day.isCurrentYear && day.level === 3 && 'bg-[var(--color-accent)]/75 hover:bg-[var(--color-accent)]/90',
+                      day.isCurrentYear && day.level === 4 && 'bg-[var(--color-accent)] hover:brightness-110',
+                    ]}
+                  />
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* Footer Row Below Grid */}
+    <div class="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-ctp-subtext0">
+      <div>
+        <span class="text-ctp-text">{statsSummary}</span>
+      </div>
+
+      <div class="flex items-center gap-1.5 select-none text-[10px]">
+        <span>Less</span>
+        <div class="flex gap-[2px]">
+          <div class="w-2.5 h-2.5 bg-ctp-surface0/50 rounded-[1px]"></div>
+          <div class="w-2.5 h-2.5 bg-[var(--color-accent)]/25 rounded-[1px]"></div>
+          <div class="w-2.5 h-2.5 bg-[var(--color-accent)]/50 rounded-[1px]"></div>
+          <div class="w-2.5 h-2.5 bg-[var(--color-accent)]/75 rounded-[1px]"></div>
+          <div class="w-2.5 h-2.5 bg-[var(--color-accent)] rounded-[1px]"></div>
+        </div>
+        <span>More</span>
+      </div>
+    </div>
+
+    {/* Dynamic Interactive Tooltip */}
+    <div
+      id="gh-tooltip"
+      class="fixed hidden z-50 pointer-events-none bg-ctp-base/95 text-ctp-text border border-ctp-surface0 p-2.5 shadow-lg font-mono text-xs space-y-1 transition-opacity duration-150 backdrop-blur-sm"
+    >
+      <div id="gh-tooltip-header" class="font-medium text-ctp-text"></div>
+      <div id="gh-tooltip-body" class="text-[11px] text-ctp-subtext0 space-y-0.5"></div>
+    </div>
+  </div>
+</section>
+
+<script>
+  function setupGraphTooltip() {
+    const tooltip = document.getElementById('gh-tooltip');
+    const header = document.getElementById('gh-tooltip-header');
+    const body = document.getElementById('gh-tooltip-body');
+    if (!tooltip || !header || !body) return;
+
+    const cells = document.querySelectorAll<HTMLElement>('.day-cell');
+
+    cells.forEach((cell) => {
+      cell.addEventListener('mouseenter', (e) => {
+        const date = cell.dataset.date;
+        const total = parseInt(cell.dataset.total || '0', 10);
+        const commits = parseInt(cell.dataset.commits || '0', 10);
+        const prs = parseInt(cell.dataset.prs || '0', 10);
+        const issues = parseInt(cell.dataset.issues || '0', 10);
+        const releases = parseInt(cell.dataset.releases || '0', 10);
+
+        if (!date) return;
+
+        header.textContent = `${total} contribution${total === 1 ? '' : 's'} on ${date}`;
+
+        const parts: string[] = [];
+        if (commits > 0) parts.push(`• ${commits} commit${commits === 1 ? '' : 's'}`);
+        if (prs > 0) parts.push(`• ${prs} pull request${prs === 1 ? '' : 's'}`);
+        if (issues > 0) parts.push(`• ${issues} issue${issues === 1 ? '' : 's'}`);
+        if (releases > 0) parts.push(`• ${releases} release${releases === 1 ? '' : 's'}`);
+
+        if (parts.length === 0) {
+          body.textContent = 'No recorded engineering activity';
+        } else {
+          body.innerHTML = parts.join('<br/>');
+        }
+
+        tooltip.classList.remove('hidden');
+        positionTooltip(e);
+      });
+
+      cell.addEventListener('mousemove', positionTooltip);
+
+      cell.addEventListener('mouseleave', () => {
+        tooltip.classList.add('hidden');
+      });
+    });
+
+    function positionTooltip(e: MouseEvent) {
+      const offset = 12;
+      const rect = tooltip!.getBoundingClientRect();
+
+      let left = e.clientX + offset;
+      let top = e.clientY - rect.height - offset;
+
+      if (left + rect.width > window.innerWidth - 10) {
+        left = e.clientX - rect.width - offset;
+      }
+      if (top < 10) {
+        top = e.clientY + offset;
+      }
+
+      tooltip!.style.left = `${left}px`;
+      tooltip!.style.top = `${top}px`;
+    }
+  }
+
+  setupGraphTooltip();
+  document.addEventListener('astro:after-swap', setupGraphTooltip);
+</script>

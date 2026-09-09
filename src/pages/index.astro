@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import GithubActivityGraph from '../components/GithubActivityGraph.astro';
 import { formatBlogDate, getAllBlogPosts } from '../lib/blog';
 
 const posts = await getAllBlogPosts();
@@ -91,6 +92,8 @@ const team = [
 				</ul>
 			</section>
 		)}
+
+		<GithubActivityGraph />
 
 		<section>
 			<h2 class="mb-4 font-mono text-xs uppercase tracking-widest text-ctp-subtext0">
