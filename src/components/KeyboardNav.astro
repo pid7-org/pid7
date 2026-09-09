@@ -1,0 +1,523 @@
+---
+// KeyboardNav.astro — CommitMono-style keyboard navigation & controls
+---
+
+<!-- Floating Keyboard Hints HUD (commitmono style) -->
+<div
+  id="kb-nav-hud"
+  aria-label="Keyboard navigation controls"
+  class="fixed bottom-11 right-4 sm:right-6 z-30 hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-ctp-crust/90 backdrop-blur-md border border-ctp-surface0/60 text-[11px] font-mono text-ctp-subtext0 shadow-lg select-none transition-all duration-200"
+>
+  <span class="flex items-center gap-1">
+    <kbd class="kb-badge" data-kb="1">1</kbd>-<kbd class="kb-badge" data-kb="5">5</kbd>
+    <span class="text-ctp-subtext0/70 text-[10px]">section</span>
+  </span>
+
+  <span class="text-ctp-surface1">•</span>
+
+  <span class="flex items-center gap-1">
+    <kbd class="kb-badge" data-kb="j">j</kbd><kbd class="kb-badge" data-kb="k">k</kbd>
+    <span class="text-ctp-subtext0/70 text-[10px]">scroll</span>
+  </span>
+
+  <span class="text-ctp-surface1">•</span>
+
+  <span class="flex items-center gap-1">
+    <kbd class="kb-badge" data-kb="t">t</kbd>
+    <span class="text-ctp-subtext0/70 text-[10px]">terminal</span>
+  </span>
+
+  <span class="text-ctp-surface1">•</span>
+
+  <span class="flex items-center gap-1">
+    <kbd class="kb-badge" data-kb="g">g</kbd><kbd class="kb-badge" data-kb="h">h</kbd>
+    <span class="text-ctp-subtext0/70 text-[10px]">home</span>
+  </span>
+
+  <span class="text-ctp-surface1">•</span>
+
+  <button
+    id="kb-help-btn"
+    type="button"
+    title="Keyboard shortcuts guide (press ?)"
+    class="flex items-center gap-1 hover:text-ctp-text transition-colors cursor-pointer"
+  >
+    <kbd class="kb-badge" data-kb="?">?</kbd>
+  </button>
+</div>
+
+<!-- Keyboard Shortcuts Modal Dialog -->
+<div
+  id="kb-modal"
+  aria-hidden="true"
+  class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-ctp-crust/80 backdrop-blur-sm transition-opacity duration-200"
+>
+  <div
+    class="relative w-full max-w-md rounded-xl bg-ctp-mantle border border-ctp-surface0/80 shadow-2xl p-5 sm:p-6 font-mono text-xs text-ctp-text space-y-4"
+  >
+    <div class="flex items-center justify-between border-b border-ctp-surface0/60 pb-3">
+      <div class="flex items-center gap-2">
+        <span class="text-[var(--color-accent)] font-semibold">~/pid7</span>
+        <span class="text-ctp-subtext0">keyboard navigation</span>
+      </div>
+      <kbd class="px-1.5 py-0.5 rounded border border-ctp-surface0 text-[10px] text-ctp-subtext0">esc</kbd>
+    </div>
+
+    <div class="space-y-3.5 text-[11px]">
+      <div>
+        <div class="text-[var(--color-accent)] font-semibold uppercase tracking-wider text-[10px] mb-1.5">Navigation & Scroll</div>
+        <div class="grid grid-cols-[100px_1fr] gap-x-2 gap-y-1 text-ctp-subtext0">
+          <div><kbd class="kb-badge">j</kbd> / <kbd class="kb-badge">k</kbd> or <kbd class="kb-badge">↓</kbd> / <kbd class="kb-badge">↑</kbd></div>
+          <div>scroll smoothly down / up</div>
+          <div><kbd class="kb-badge">w</kbd> / <kbd class="kb-badge">s</kbd></div>
+          <div>scroll page up / down</div>
+          <div><kbd class="kb-badge">d</kbd> / <kbd class="kb-badge">u</kbd></div>
+          <div>scroll half page down / up</div>
+          <div><kbd class="kb-badge">g</kbd> <kbd class="kb-badge">g</kbd> / <kbd class="kb-badge">G</kbd></div>
+          <div>jump to top / bottom of page</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-[var(--color-accent)] font-semibold uppercase tracking-wider text-[10px] mb-1.5">Sections</div>
+        <div class="grid grid-cols-[100px_1fr] gap-x-2 gap-y-1 text-ctp-subtext0">
+          <div><kbd class="kb-badge">1</kbd> – <kbd class="kb-badge">5</kbd></div>
+          <div>jump directly to section (intro, building, writing, activity, team)</div>
+          <div><kbd class="kb-badge">[</kbd> / <kbd class="kb-badge">]</kbd></div>
+          <div>focus previous / next section</div>
+          <div><kbd class="kb-badge">Enter</kbd></div>
+          <div>open active link in focused section</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-[var(--color-accent)] font-semibold uppercase tracking-wider text-[10px] mb-1.5">Pages & Terminal</div>
+        <div class="grid grid-cols-[100px_1fr] gap-x-2 gap-y-1 text-ctp-subtext0">
+          <div><kbd class="kb-badge">g</kbd> <kbd class="kb-badge">h</kbd></div>
+          <div>go to home page (/)</div>
+          <div><kbd class="kb-badge">g</kbd> <kbd class="kb-badge">b</kbd></div>
+          <div>go to writing / blog</div>
+          <div><kbd class="kb-badge">Backspace</kbd></div>
+          <div>back to home (when in article)</div>
+          <div><kbd class="kb-badge">t</kbd> or <kbd class="kb-badge">/</kbd></div>
+          <div>open terminal drawer</div>
+          <div><kbd class="kb-badge">Shift+↑/↓</kbd></div>
+          <div>scroll terminal output (when open)</div>
+          <div><kbd class="kb-badge">Esc</kbd></div>
+          <div>close terminal / close dialog</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pt-2 border-t border-ctp-surface0/40 text-[10px] text-ctp-subtext0/60 flex items-center justify-between">
+      <span>inspired by commitmono.com</span>
+      <span>press <kbd class="kb-badge">?</kbd> to toggle</span>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  /* Subtle indicator on focused section */
+  [data-kb-section] {
+    transition: all 200ms ease-out;
+    scroll-margin-top: 2.5rem;
+  }
+
+  [data-kb-section][data-kb-active="true"] {
+    position: relative;
+  }
+
+  [data-kb-section][data-kb-active="true"]::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 0px;
+    bottom: 0px;
+    width: 2px;
+    background-color: var(--color-accent);
+    border-radius: 9999px;
+  }
+
+  @media (max-width: 640px) {
+    [data-kb-section][data-kb-active="true"]::before {
+      left: -6px;
+    }
+  }
+
+  /* Keyboard badge styling */
+  .kb-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 3px;
+    font-size: 10px;
+    font-family: inherit;
+    border-radius: 3px;
+    border: 1px solid var(--color-ctp-surface0);
+    background-color: var(--color-ctp-surface0);
+    color: var(--color-ctp-subtext0);
+    line-height: 1;
+    transition: all 120ms ease-out;
+  }
+
+  .kb-badge.active-key {
+    background-color: var(--color-accent) !important;
+    border-color: var(--color-accent) !important;
+    color: var(--color-ctp-crust) !important;
+    font-weight: 700;
+    transform: scale(1.15);
+  }
+
+  /* Active item selection within sections */
+  [data-kb-item].kb-item-selected {
+    background-color: color-mix(in srgb, var(--color-accent) 8%, transparent);
+    border-radius: 4px;
+    outline: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    let activeSectionIdx = -1;
+    let activeItemIdx = -1;
+    let pendingSeq = '';
+    let pendingSeqTimer = null;
+    let isHelpModalOpen = false;
+
+    const hud = document.getElementById('kb-nav-hud');
+    const helpBtn = document.getElementById('kb-help-btn');
+    const modal = document.getElementById('kb-modal');
+
+    function getSections() {
+      return Array.from(document.querySelectorAll('[data-kb-section]')).sort((a, b) => {
+        const numA = parseInt(a.getAttribute('data-kb-section') || '0', 10);
+        const numB = parseInt(b.getAttribute('data-kb-section') || '0', 10);
+        return numA - numB;
+      });
+    }
+
+    function flashBadge(key) {
+      const badges = document.querySelectorAll(`.kb-badge[data-kb="${key}"]`);
+      badges.forEach((b) => {
+        b.classList.add('active-key');
+        setTimeout(() => b.classList.remove('active-key'), 180);
+      });
+    }
+
+    function toggleModal(force) {
+      if (!modal) return;
+      isHelpModalOpen = force !== undefined ? force : !isHelpModalOpen;
+      if (isHelpModalOpen) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        modal.setAttribute('aria-hidden', 'false');
+      } else {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+    }
+
+    helpBtn?.addEventListener('click', () => toggleModal(true));
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) toggleModal(false);
+    });
+
+    function setActiveSection(idx) {
+      const sections = getSections();
+      if (sections.length === 0) return;
+
+      if (idx < 0) idx = 0;
+      if (idx >= sections.length) idx = sections.length - 1;
+
+      sections.forEach((s) => s.removeAttribute('data-kb-active'));
+      clearActiveItem();
+
+      activeSectionIdx = idx;
+      const target = sections[idx];
+      target.setAttribute('data-kb-active', 'true');
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function clearActiveItem() {
+      document.querySelectorAll('[data-kb-item].kb-item-selected').forEach((el) => {
+        el.classList.remove('kb-item-selected');
+      });
+      activeItemIdx = -1;
+    }
+
+    function getItemsInSection(section) {
+      if (!section) return [];
+      return Array.from(section.querySelectorAll('[data-kb-item]'));
+    }
+
+    function navigateItems(delta) {
+      const sections = getSections();
+      if (activeSectionIdx < 0 || activeSectionIdx >= sections.length) return false;
+      const currentSection = sections[activeSectionIdx];
+      const items = getItemsInSection(currentSection);
+      if (items.length === 0) return false;
+
+      let nextIdx = activeItemIdx + delta;
+      if (nextIdx < 0) nextIdx = 0;
+      if (nextIdx >= items.length) nextIdx = items.length - 1;
+
+      items.forEach((item) => item.classList.remove('kb-item-selected'));
+      activeItemIdx = nextIdx;
+      const target = items[nextIdx];
+      target.classList.add('kb-item-selected');
+      target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return true;
+    }
+
+    function triggerActiveItem() {
+      const sections = getSections();
+      if (activeSectionIdx >= 0 && activeSectionIdx < sections.length) {
+        const currentSection = sections[activeSectionIdx];
+        const items = getItemsInSection(currentSection);
+        if (activeItemIdx >= 0 && activeItemIdx < items.length) {
+          const item = items[activeItemIdx];
+          const link = item.querySelector('a') || (item.tagName === 'A' ? item : null);
+          if (link) {
+            link.click();
+            return;
+          }
+        }
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      // 1. Ignore if typing in another input / textarea / editable element
+      const activeEl = document.activeElement;
+      const isInput =
+        activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.tagName === 'SELECT' ||
+          activeEl.isContentEditable);
+
+      // Check if terminal is open
+      const cli = window.__cli;
+      const isCliOpen = cli && cli.isOpen();
+
+      // If Escape pressed: close modal or close terminal
+      if (e.key === 'Escape') {
+        if (isHelpModalOpen) {
+          e.preventDefault();
+          toggleModal(false);
+          return;
+        }
+        if (isCliOpen) {
+          e.preventDefault();
+          cli.close();
+          return;
+        }
+        // Deselect current section highlight
+        const sections = getSections();
+        sections.forEach((s) => s.removeAttribute('data-kb-active'));
+        clearActiveItem();
+        activeSectionIdx = -1;
+        return;
+      }
+
+      // If user is typing in an active text input (and not modal escape), don't intercept page nav
+      if (isInput) {
+        // Allow scrolling terminal with Shift+ArrowUp/Down or PageUp/PageDown when terminal input focused
+        if (isCliOpen) {
+          if ((e.shiftKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) || e.key === 'PageUp' || e.key === 'PageDown') {
+            e.preventDefault();
+            const delta = e.key === 'ArrowUp' || e.key === 'PageUp' ? -140 : 140;
+            cli.scrollBy(delta);
+          }
+        }
+        return;
+      }
+
+      // Ignore standard browser modifier shortcuts (Cmd+R, Ctrl+C, etc.)
+      if (e.ctrlKey || e.metaKey || e.altKey) {
+        return;
+      }
+
+      const key = e.key;
+
+      // 2. Terminal shortcut: 't' or '/' opens terminal
+      if (key === 't' || key === 'T' || key === '/') {
+        if (!isCliOpen && cli) {
+          e.preventDefault();
+          flashBadge('t');
+          cli.open();
+          return;
+        }
+      }
+
+      // If terminal is currently open, let terminal handle keys
+      if (isCliOpen) {
+        if (key === 'PageUp' || key === 'PageDown' || (e.shiftKey && (key === 'ArrowUp' || key === 'ArrowDown'))) {
+          e.preventDefault();
+          const delta = key === 'PageUp' || key === 'ArrowUp' ? -140 : 140;
+          cli.scrollBy(delta);
+        }
+        return;
+      }
+
+      // 3. Help modal toggle: '?'
+      if (key === '?') {
+        e.preventDefault();
+        flashBadge('?');
+        toggleModal();
+        return;
+      }
+
+      // 4. Sequential key navigation: 'g' sequence
+      if (pendingSeq === 'g') {
+        clearTimeout(pendingSeqTimer);
+        pendingSeq = '';
+
+        if (key === 'h' || key === 'H') {
+          // Go home
+          e.preventDefault();
+          flashBadge('g');
+          flashBadge('h');
+          if (window.location.pathname !== '/') {
+            window.location.href = '/';
+          } else {
+            setActiveSection(0);
+          }
+          return;
+        }
+
+        if (key === 'b' || key === 'B') {
+          // Go to blog / writing section
+          e.preventDefault();
+          flashBadge('g');
+          if (window.location.pathname !== '/') {
+            window.location.href = '/#section-writing';
+          } else {
+            const sections = getSections();
+            const writingIdx = sections.findIndex((s) => s.id === 'section-writing');
+            if (writingIdx >= 0) setActiveSection(writingIdx);
+          }
+          return;
+        }
+
+        if (key === 'g') {
+          // Top of page
+          e.preventDefault();
+          flashBadge('g');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+      }
+
+      if (key === 'g') {
+        pendingSeq = 'g';
+        flashBadge('g');
+        pendingSeqTimer = setTimeout(() => {
+          pendingSeq = '';
+        }, 1000);
+        return;
+      }
+
+      // 5. Backspace on article page: return to home
+      if (key === 'Backspace') {
+        if (window.location.pathname.startsWith('/blog/')) {
+          e.preventDefault();
+          window.location.href = '/';
+          return;
+        }
+      }
+
+      // 6. Number keys: 1 - 5 jump to section
+      if (/^[1-5]$/.test(key)) {
+        e.preventDefault();
+        flashBadge(key);
+        const secNum = parseInt(key, 10);
+        const sections = getSections();
+        const targetIdx = sections.findIndex((s) => s.getAttribute('data-kb-section') === String(secNum));
+        if (targetIdx >= 0) {
+          setActiveSection(targetIdx);
+        }
+        return;
+      }
+
+      // 7. Section stepping: '[' and ']' or 'p' and 'n'
+      if (key === '[' || key === 'p') {
+        e.preventDefault();
+        const sections = getSections();
+        const next = activeSectionIdx <= 0 ? sections.length - 1 : activeSectionIdx - 1;
+        setActiveSection(next);
+        return;
+      }
+      if (key === ']' || key === 'n') {
+        e.preventDefault();
+        const sections = getSections();
+        const next = activeSectionIdx >= sections.length - 1 ? 0 : activeSectionIdx + 1;
+        setActiveSection(next);
+        return;
+      }
+
+      // 8. Scrolling: 'j' / 's' / ArrowDown & 'k' / 'w' / ArrowUp
+      if (key === 'j' || key === 's' || key === 'ArrowDown') {
+        e.preventDefault();
+        flashBadge('j');
+        // If an item in section is navigated
+        if (activeSectionIdx >= 0 && navigateItems(1)) {
+          return;
+        }
+        window.scrollBy({ top: 90, behavior: 'smooth' });
+        return;
+      }
+
+      if (key === 'k' || key === 'w' || key === 'ArrowUp') {
+        e.preventDefault();
+        flashBadge('k');
+        if (activeSectionIdx >= 0 && navigateItems(-1)) {
+          return;
+        }
+        window.scrollBy({ top: -90, behavior: 'smooth' });
+        return;
+      }
+
+      // Half page scroll: 'd' (down), 'u' (up)
+      if (key === 'd') {
+        e.preventDefault();
+        window.scrollBy({ top: Math.floor(window.innerHeight * 0.45), behavior: 'smooth' });
+        return;
+      }
+      if (key === 'u') {
+        e.preventDefault();
+        window.scrollBy({ top: -Math.floor(window.innerHeight * 0.45), behavior: 'smooth' });
+        return;
+      }
+
+      // Bottom of page: 'G' (Shift+g)
+      if (key === 'G') {
+        e.preventDefault();
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        return;
+      }
+
+      // 9. Enter key: triggers active item
+      if (key === 'Enter') {
+        if (activeSectionIdx >= 0 && activeItemIdx >= 0) {
+          e.preventDefault();
+          triggerActiveItem();
+        }
+      }
+    });
+
+    // Hash anchor jump on page load
+    if (window.location.hash) {
+      setTimeout(() => {
+        const hashEl = document.querySelector(window.location.hash);
+        if (hashEl && hashEl.hasAttribute('data-kb-section')) {
+          const sections = getSections();
+          const idx = sections.indexOf(hashEl);
+          if (idx >= 0) setActiveSection(idx);
+        }
+      }, 200);
+    }
+  })();
+</script>

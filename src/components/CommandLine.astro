@@ -26,7 +26,7 @@ const blogPosts = rawPosts.map((p) => ({
   </div>
 
   <div class="flex items-center gap-2 text-ctp-subtext0/50 text-[11px] shrink-0">
-    <span class="hidden sm:inline">type to open</span>
+    <span class="hidden sm:inline">press <kbd class="px-1 py-0.5 rounded border border-ctp-surface0 bg-ctp-surface0/30 text-[10px] text-[var(--color-accent)] font-semibold">t</kbd> to open</span>
     <kbd class="px-1.5 py-0.5 rounded border border-ctp-surface0 bg-ctp-surface0/30 text-[10px]">esc</kbd>
   </div>
 </div>
@@ -175,6 +175,18 @@ const blogPosts = rawPosts.map((p) => ({
       }
     }
 
+    window.__cli = {
+      open: openTerminal,
+      close: closeTerminal,
+      toggle: () => (isOpen ? closeTerminal() : openTerminal()),
+      isOpen: () => isOpen,
+      scrollBy: (delta) => {
+        if (terminalBody) {
+          terminalBody.scrollBy({ top: delta, behavior: 'smooth' });
+        }
+      }
+    };
+
     // Clicking anywhere in the terminal window focuses the input
     terminalBody?.addEventListener('click', () => {
       input?.focus();
@@ -211,22 +223,29 @@ const blogPosts = rawPosts.map((p) => ({
         return;
       }
 
-      // If terminal is closed, any letter/number key opens terminal at the bottom & accepts input
+      // If terminal is closed, 't', '/', or '`' opens terminal at bottom
       if (!isOpen) {
-        const isLetterOrNumber = /^[a-zA-Z0-9/]$/.test(e.key);
-        if (isLetterOrNumber) {
+        if (e.key === 't' || e.key === 'T' || e.key === '/' || e.key === '`') {
           e.preventDefault();
           openTerminal();
           if (input) {
-            input.value = e.key;
+            if (e.key === '/') input.value = '/';
             input.focus();
           }
         }
       }
     });
 
-    // Terminal Input Key Navigation (Enter, Up, Down, Tab)
+    // Terminal Input Key Navigation (Enter, Up, Down, Tab, Scrolling)
     input?.addEventListener('keydown', (e) => {
+      // Allow scrolling terminal output while input is focused
+      if ((e.shiftKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) || e.key === 'PageUp' || e.key === 'PageDown') {
+        e.preventDefault();
+        const delta = (e.key === 'ArrowUp' || e.key === 'PageUp') ? -140 : 140;
+        terminalBody?.scrollBy({ top: delta, behavior: 'smooth' });
+        return;
+      }
+
       if (e.key === 'Enter') {
         e.preventDefault();
         const cmd = input.value.trim();

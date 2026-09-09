@@ -50,7 +50,9 @@ const pageDescription = post.frontmatter.description || fallbackExcerpt || 'engi
 			<span class="font-mono text-[9px] text-[var(--color-accent)]/60 uppercase tracking-widest">eyeline</span>
 		</div>
 
-		<Header />
+		<div id="section-intro" data-kb-section="1" data-kb-title="Header" class="focus:outline-none">
+			<Header />
+		</div>
 
 		<header class="space-y-2.5 sm:space-y-3">
 			<h1 class="font-serif italic text-2xl sm:text-4xl font-semibold tracking-tight text-ctp-text leading-tight break-words">
@@ -66,7 +68,7 @@ const pageDescription = post.frontmatter.description || fallbackExcerpt || 'engi
 			</div>
 		</header>
 
-		<article class="prose max-w-none font-mono leading-relaxed text-ctp-text space-y-5 sm:space-y-6 min-w-0">
+		<article id="section-article" data-kb-section="2" data-kb-title="Article" class="focus:outline-none prose max-w-none font-mono leading-relaxed text-ctp-text space-y-5 sm:space-y-6 min-w-0">
 			<div set:html={post.html} />
 		</article>
 
@@ -86,7 +88,7 @@ const pageDescription = post.frontmatter.description || fallbackExcerpt || 'engi
 		</div>
 
 		{post.glossary.length > 0 && (
-			<section class="mt-8 sm:mt-12 space-y-4 sm:space-y-6">
+			<section id="section-glossary" data-kb-section="3" data-kb-title="Glossary" class="focus:outline-none mt-8 sm:mt-12 space-y-4 sm:space-y-6">
 				<h2 id="glossary" class="font-serif italic text-lg sm:text-xl font-semibold text-[var(--color-accent)]">
 					#glossary
 				</h2>
