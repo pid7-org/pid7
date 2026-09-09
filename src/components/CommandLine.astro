@@ -563,10 +563,19 @@ const blogPosts = rawPosts.map((p) => ({
 
           const foundProj = projects.find((p) => p.name.toLowerCase() === target.toLowerCase());
           if (foundProj) {
+            const stats = [
+              foundProj.commits ? `${foundProj.commits} commits` : '',
+              foundProj.releases ? `${foundProj.releases} releases` : '',
+              foundProj.stars ? `★ ${foundProj.stars}` : '',
+            ]
+              .filter(Boolean)
+              .join(' • ');
+
             responseHtml = `
               <div class="text-ctp-subtext0 space-y-1">
                 <div class="text-ctp-text font-medium">${foundProj.name}</div>
                 <div>${foundProj.desc}</div>
+                ${stats ? `<div class="text-[11px] text-ctp-subtext0/70 font-mono italic">${stats}</div>` : ''}
                 <div>repo: <a href="${foundProj.url}" target="_blank" rel="noreferrer" class="text-[var(--color-accent)] underline">${foundProj.url.replace(/^https?:\/\//, '')}</a></div>
               </div>
             `;
@@ -605,15 +614,18 @@ const blogPosts = rawPosts.map((p) => ({
         case 'projects':
         case 'building':
           responseHtml = `
-            <div class="space-y-1 text-ctp-subtext0">
+            <div class="space-y-1.5 text-ctp-subtext0">
               ${projects
                 .map(
                   (p) => `
-                <div>
-                  <a href="${p.url}" target="_blank" rel="noreferrer" class="text-ctp-text font-medium hover:text-[var(--color-accent)] underline">
-                    ${p.name}
-                  </a>
-                  <span> — ${p.desc}</span>
+                <div class="space-y-0.5">
+                  <div class="flex flex-wrap items-baseline gap-x-2">
+                    <a href="${p.url}" target="_blank" rel="noreferrer" class="text-ctp-text font-medium hover:text-[var(--color-accent)] underline">
+                      ${p.name}
+                    </a>
+                    ${p.commits ? `<span class="text-ctp-subtext0/60 text-[10px] italic">(${p.commits} commits)</span>` : ''}
+                  </div>
+                  <div class="text-ctp-subtext0 text-[11px]">${p.desc}</div>
                 </div>
               `
                 )
