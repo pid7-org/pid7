@@ -78,7 +78,6 @@ export const projects: Project[] =
 
 export interface TeamMember {
   name: string;
-  role?: string;
   image?: string;
   bio: string;
   github?: string;
@@ -87,15 +86,13 @@ export interface TeamMember {
 export const team: TeamMember[] = [
   {
     name: 'Adii',
-    role: 'Founder & Engineer',
     image: '/adii.jpg',
     bio: 'Engineer by choice, exploring systems engineering and turning ideas into reality.',
     github: 'https://github.com/adityamotale',
   },
   {
     name: 'Sher',
-    role: 'Chief Officer of Happiness',
     image: '/sher.jpg',
-    bio: 'Keeps morale high and sleeps through code reviews.',
+    bio: 'Chief Officer of Happiness, keeps morale high and sleeps through code reviews.',
   },
 ];

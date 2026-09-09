@@ -589,7 +589,16 @@ const blogPosts = rawPosts.map((p) => ({
           } else if (target === 'team.txt' || target === 'team') {
             responseHtml = `
               <div class="text-ctp-subtext0 space-y-1">
-                ${team.map((m) => `<div><span class="text-ctp-text font-medium">${m.name}</span> (${m.role}) — ${m.bio}</div>`).join('')}
+                ${team
+                  .map(
+                    (m) => `
+                  <div>
+                    ${m.github ? `<a href="${m.github}" target="_blank" rel="noreferrer" class="text-ctp-text font-medium hover:text-[var(--color-accent)] underline">${m.name}</a>` : `<span class="text-ctp-text font-medium">${m.name}</span>`}
+                    <span> — ${m.bio}</span>
+                  </div>
+                `
+                  )
+                  .join('')}
               </div>
             `;
           } else {
@@ -662,7 +671,16 @@ const blogPosts = rawPosts.map((p) => ({
         case 'who':
           responseHtml = `
             <div class="space-y-1 text-ctp-subtext0">
-              ${team.map((m) => `<div><span class="text-ctp-text font-medium">${m.name}</span> <span class="text-[var(--color-accent)]">(${m.role})</span> — ${m.bio}</div>`).join('')}
+              ${team
+                .map(
+                  (m) => `
+                <div>
+                  ${m.github ? `<a href="${m.github}" target="_blank" rel="noreferrer" class="text-ctp-text font-medium hover:text-[var(--color-accent)] underline">${m.name}</a>` : `<span class="text-ctp-text font-medium">${m.name}</span>`}
+                  <span> — ${m.bio}</span>
+                </div>
+              `
+                )
+                .join('')}
             </div>
           `;
           break;
