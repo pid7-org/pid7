@@ -11,6 +11,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "github:activity": "node --experimental-strip-types scripts/github-activity.ts",
+    "github:languages": "node --experimental-strip-types scripts/github-languages.ts",
     "test": "vitest run"
   },
   "dependencies": {
