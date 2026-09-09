@@ -11,7 +11,6 @@ const blogPosts = rawPosts.map((p) => ({
 }));
 ---
 
-<!-- Sticky Docked Bottom Bar (Collapsed) -->
 <div
   id="cli-dock"
   role="button"
@@ -25,13 +24,49 @@ const blogPosts = rawPosts.map((p) => ({
     <span class="inline-block w-1.5 h-3 bg-[var(--color-accent)] animate-pulse shrink-0"></span>
   </div>
 
-  <div class="flex items-center gap-2 text-ctp-subtext0/50 text-[11px] shrink-0">
-    <span class="hidden sm:inline">press <kbd class="px-1 py-0.5 rounded border border-ctp-surface0 bg-ctp-surface0/30 text-[10px] text-[var(--color-accent)] font-semibold">t</kbd> to open</span>
-    <kbd class="px-1.5 py-0.5 rounded border border-ctp-surface0 bg-ctp-surface0/30 text-[10px]">esc</kbd>
+  <div class="flex items-center gap-1.5 sm:gap-2 text-ctp-subtext0 text-[11px] shrink-0 font-mono select-none" id="cli-dock-nav">
+    <button type="button" class="kb-dock-btn hidden sm:flex items-center gap-1 hover:text-ctp-text transition-colors cursor-pointer" data-kb-action="scroll" title="Scroll down (j) / up (k)">
+      <kbd class="kb-badge" data-kb="j">j</kbd><kbd class="kb-badge" data-kb="k">k</kbd>
+      <span class="text-ctp-subtext0/60 text-[10px] hidden md:inline">scroll</span>
+    </button>
+
+    <span class="text-ctp-surface1 hidden sm:inline">•</span>
+
+    <button type="button" class="kb-dock-btn hidden sm:flex items-center gap-1 hover:text-ctp-text transition-colors cursor-pointer" data-kb-action="section" title="Jump previous ([) / next (]) section">
+      <kbd class="kb-badge" data-kb="[">[</kbd><kbd class="kb-badge" data-kb="]">]</kbd>
+      <span class="text-ctp-subtext0/60 text-[10px] hidden md:inline">section</span>
+    </button>
+
+    <span class="text-ctp-surface1 hidden sm:inline">•</span>
+
+    <button type="button" class="kb-dock-btn hidden md:flex items-center gap-0.5 hover:text-ctp-text transition-colors cursor-pointer" data-kb-action="focus" title="Move focus in grid or entries (↑ ↓ ← →)">
+      <kbd class="kb-badge" data-kb="ArrowUp">↑</kbd><kbd class="kb-badge" data-kb="ArrowDown">↓</kbd><kbd class="kb-badge" data-kb="ArrowLeft">←</kbd><kbd class="kb-badge" data-kb="ArrowRight">→</kbd>
+      <span class="text-ctp-subtext0/60 text-[10px] hidden lg:inline ml-0.5">focus</span>
+    </button>
+
+    <span class="text-ctp-surface1 hidden md:inline">•</span>
+
+    <button type="button" class="kb-dock-btn hidden sm:flex items-center gap-1 hover:text-ctp-text transition-colors cursor-pointer" data-kb-action="jump" title="Jump to start (gg) / end (G)">
+      <kbd class="kb-badge" data-kb="gg">gg</kbd><kbd class="kb-badge" data-kb="G">G</kbd>
+      <span class="text-ctp-subtext0/60 text-[10px] hidden md:inline">top/end</span>
+    </button>
+
+    <span class="text-ctp-surface1 hidden sm:inline">•</span>
+
+    <button type="button" class="kb-dock-btn flex items-center gap-1 hover:brightness-110 transition-all cursor-pointer" data-kb-action="terminal" title="Toggle terminal (t)">
+      <kbd class="kb-badge kb-badge-accent" data-kb="t">t</kbd>
+      <span class="text-[var(--color-accent)] font-semibold text-[10px]">terminal</span>
+    </button>
+
+    <span class="text-ctp-surface1">•</span>
+
+    <button type="button" class="kb-dock-btn flex items-center gap-1 hover:text-ctp-text transition-colors cursor-pointer" data-kb-action="home" title="Go to home page (h)">
+      <kbd class="kb-badge" data-kb="h">h</kbd>
+      <span class="text-ctp-subtext0/60 text-[10px] hidden sm:inline">home</span>
+    </button>
   </div>
 </div>
 
-<!-- Expanded Terminal Drawer (No window header, pure terminal stream) -->
 <div
   id="cli-shell"
   aria-label="Terminal shell"
@@ -39,15 +74,12 @@ const blogPosts = rawPosts.map((p) => ({
   style="height: 0px;"
 >
   <div class="flex-1 max-w-screen-md w-full mx-auto flex flex-col min-h-0 px-4 sm:px-6">
-    <!-- Scrollable Terminal Body -->
     <div
       id="cli-terminal-body"
       class="flex-1 overflow-y-auto overscroll-contain py-4 text-xs leading-relaxed space-y-2.5 select-text min-h-0"
     >
-      <!-- History / Output Log -->
       <div id="cli-output" class="space-y-2.5"></div>
 
-      <!-- Active Minimal Prompt Line -->
       <div class="flex items-center gap-2 pt-1" id="cli-prompt-line">
         <span class="text-[var(--color-accent)] font-semibold shrink-0 select-none" id="cli-prompt-label">~/pid7 ❯</span>
         <input
@@ -96,7 +128,6 @@ const blogPosts = rawPosts.map((p) => ({
 
     const accents = ['peach', 'mono', 'yellow', 'mauve', 'blue', 'green'];
 
-    // File metadata structure supporting ls, ls -l, ls -a, ls -lA
     const filesMeta = {
       '~': [
         { name: '.', isDir: true, perms: 'dr-xr-xr-x', hidden: true },
@@ -115,12 +146,22 @@ const blogPosts = rawPosts.map((p) => ({
         { name: '.', isDir: true, perms: 'dr-xr-xr-x', hidden: true },
         { name: '..', isDir: true, perms: 'dr-xr-xr-x', hidden: true },
         ...blogPosts.map((p) => ({
-          name: p.slug + '.md',
+          name: `${p.slug}.md`,
           isDir: false,
+          isPost: true,
+          slug: p.slug,
           perms: '-r--r--r--'
         }))
       ]
     };
+
+    let isOpen = false;
+    let currentDir = '~';
+    let commandHistory = [];
+    let historyIndex = -1;
+    let tempInput = '';
+
+    const terminalHeight = 320;
 
     function getPromptString() {
       return currentDir === '~' ? '~/pid7 ❯' : `~/pid7/${currentDir.replace('~/', '')} ❯`;
@@ -135,21 +176,11 @@ const blogPosts = rawPosts.map((p) => ({
       }
     }
 
-    function getTargetHeight() {
-      const maxAllowed = Math.floor(window.innerHeight * 0.85);
-      return Math.min(TERMINAL_HEIGHT, maxAllowed);
-    }
-
     function openTerminal() {
-      if (isOpen) return;
+      if (!shell) return;
       isOpen = true;
-
-      shell.style.height = getTargetHeight() + 'px';
-      if (dock) {
-        dock.style.opacity = '0';
-        dock.style.pointerEvents = 'none';
-      }
-
+      shell.style.height = `${terminalHeight}px`;
+      dock?.classList.add('opacity-0', 'pointer-events-none');
       setTimeout(() => {
         input?.focus();
         scrollToBottom();
@@ -157,16 +188,10 @@ const blogPosts = rawPosts.map((p) => ({
     }
 
     function closeTerminal() {
-      if (!isOpen) return;
+      if (!shell) return;
       isOpen = false;
-
       shell.style.height = '0px';
-      if (dock) {
-        dock.style.opacity = '1';
-        dock.style.pointerEvents = 'auto';
-      }
-
-      input?.blur();
+      dock?.classList.remove('opacity-0', 'pointer-events-none');
     }
 
     function scrollToBottom() {
@@ -187,14 +212,12 @@ const blogPosts = rawPosts.map((p) => ({
       }
     };
 
-    // Clicking anywhere in the terminal window focuses the input
     terminalBody?.addEventListener('click', () => {
       input?.focus();
     });
 
     dock?.addEventListener('click', openTerminal);
 
-    // Global Key Listener: focus on letter or number keystroke, close on 'esc'
     window.addEventListener('keydown', (e) => {
       const activeEl = document.activeElement;
       const isInputActive =
@@ -204,7 +227,6 @@ const blogPosts = rawPosts.map((p) => ({
           activeEl.tagName === 'SELECT' ||
           activeEl.isContentEditable);
 
-      // Close when Escape is pressed
       if (e.key === 'Escape') {
         if (isOpen) {
           e.preventDefault();
@@ -213,32 +235,26 @@ const blogPosts = rawPosts.map((p) => ({
         return;
       }
 
-      // Ignore modifier combinations (Ctrl+C, Cmd+R, etc.)
       if (e.ctrlKey || e.metaKey || e.altKey) {
         return;
       }
 
-      // If user is already interacting with another input/field, don't intercept
       if (isInputActive && activeEl !== input) {
         return;
       }
 
-      // If terminal is closed, 't', '/', or '`' opens terminal at bottom
       if (!isOpen) {
-        if (e.key === 't' || e.key === 'T' || e.key === '/' || e.key === '`') {
+        if (e.key === 't' || e.key === 'T') {
           e.preventDefault();
           openTerminal();
           if (input) {
-            if (e.key === '/') input.value = '/';
             input.focus();
           }
         }
       }
     });
 
-    // Terminal Input Key Navigation (Enter, Up, Down, Tab, Scrolling)
     input?.addEventListener('keydown', (e) => {
-      // Allow scrolling terminal output while input is focused
       if ((e.shiftKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) || e.key === 'PageUp' || e.key === 'PageDown') {
         e.preventDefault();
         const delta = (e.key === 'ArrowUp' || e.key === 'PageUp') ? -140 : 140;
@@ -432,7 +448,6 @@ const blogPosts = rawPosts.map((p) => ({
           const isAll = flagArgs.includes('a');
           const isAlmostAll = flagArgs.includes('A');
 
-          // Check if specific directory targeted: e.g. ls blog or ls ~/blog
           let targetPath = currentDir;
           if (nonFlagArgs.length > 0) {
             const dirArg = nonFlagArgs[0].toLowerCase().replace(/\/$/, '');
@@ -451,18 +466,14 @@ const blogPosts = rawPosts.map((p) => ({
           let filtered = rawList;
 
           if (isAll) {
-            // Include everything (. and .. and hidden)
             filtered = rawList;
           } else if (isAlmostAll) {
-            // Include all hidden files EXCEPT . and ..
             filtered = rawList.filter((f) => f.name !== '.' && f.name !== '..');
           } else {
-            // Normal: exclude hidden
             filtered = rawList.filter((f) => !f.hidden);
           }
 
           if (isLong) {
-            // Long listing format: permissions, owner, filename (read-only permissions)
             const linesHtml = filtered
               .map((f) => {
                 const nameCls = f.isDir
@@ -481,7 +492,6 @@ const blogPosts = rawPosts.map((p) => ({
 
             responseHtml = `<div class="space-y-0.5">${linesHtml}</div>`;
           } else {
-            // Compact horizontal listing format
             responseHtml = `
               <div class="flex flex-wrap gap-x-6 gap-y-1 text-ctp-subtext0">
                 ${filtered
@@ -647,11 +657,10 @@ const blogPosts = rawPosts.map((p) => ({
                 .map(
                   (p) => `
                 <div class="space-y-0.5">
-                  <div class="flex flex-wrap items-baseline gap-x-2">
+                  <div>
                     <a href="${p.url}" target="_blank" rel="noreferrer" class="text-ctp-text font-medium hover:text-[var(--color-accent)] underline">
                       ${p.name}
                     </a>
-                    ${p.commits ? `<span class="text-ctp-subtext0/60 text-[10px] italic">(${p.commits} commits)</span>` : ''}
                   </div>
                   <div class="text-ctp-subtext0 text-[11px]">${p.desc}</div>
                 </div>
