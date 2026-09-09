@@ -17,7 +17,7 @@ async function main() {
   const isIncrementalRequested = args.includes('--incremental');
   const fullRequested = args.includes('--full');
 
-  let daysWindow = 3;
+  let daysWindow = 7;
   const daysIndex = args.indexOf('--days');
   if (daysIndex !== -1 && args[daysIndex + 1]) {
     const parsedDays = parseInt(args[daysIndex + 1], 10);

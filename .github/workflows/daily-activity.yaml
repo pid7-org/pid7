@@ -1,9 +1,9 @@
-name: GH Activity
+name: Daily Org GitHub Activity Collector
 
 on:
   schedule:
-    # 1900 UTC (i.e 0030 IST)
-    - cron: '0 19 * * *'
+    # Runs at 00:30 UTC daily (06:00 IST)
+    - cron: '30 0 * * *'
   workflow_dispatch:
 
 permissions:
@@ -31,16 +31,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
           GITHUB_ORG: ${{ vars.GITHUB_ORG || 'pid7-org' }}
-        run: npm run github:activity -- --incremental
+        run: npm run github:activity -- --incremental --days 7
 
       - name: Commit and push updated activity JSON
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add src/assets/gh-activity.json
+
           if git diff --cached --quiet; then
             echo "No activity updates to commit."
           else
-            git commit -m "chore(assets): update org GitHub activity dataset [skip ci]"
+            git commit -m "gh-activity: update org github activity dataset [skip ci]"
             git push
           fi
