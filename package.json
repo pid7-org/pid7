@@ -10,6 +10,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
+    "github:activity": "node --experimental-strip-types scripts/github-activity.ts",
     "test": "vitest run"
   },
   "dependencies": {
