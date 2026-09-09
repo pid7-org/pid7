@@ -1,5 +1,6 @@
 ---
 import activityData from '../assets/gh-activity.json';
+import GithubLanguages from './GithubLanguages.astro';
 
 interface Bucket {
   commits: number;
@@ -158,6 +159,9 @@ const statsSummary = [
         <span>More</span>
       </div>
     </div>
+
+    {/* Languages Breakdown Component */}
+    <GithubLanguages />
 
     {/* Dynamic Interactive Tooltip */}
     <div

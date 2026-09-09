@@ -1,0 +1,99 @@
+---
+import languageData from '../assets/gh-languages.json';
+
+interface LanguageStat {
+  name: string;
+  color: string | null;
+  bytes: number;
+  percentage: number;
+}
+
+const rawLanguages = (languageData.languages || []) as LanguageStat[];
+
+const MAX_ENTRIES = 7;
+let displayLanguages: Array<{
+  name: string;
+  bytes: number;
+  percentage: number;
+  themeColor: string;
+}> = [];
+
+// 8 distinct Catppuccin theme color tokens.
+// Slot 1 uses the active theme accent color (var(--color-accent)).
+// Slots 2-8 use non-accent Catppuccin palette tokens so colors NEVER overlap
+// regardless of whether active accent is peach, mauve (purple), blue, green, yellow, or mono.
+const themeColors = [
+  'var(--color-accent)',                                         // #1 Active Accent (Peach/Mauve/Blue/Green/Yellow/Mono)
+  'var(--color-ctp-teal, var(--ctp-teal, #94e2d5))',             // #2 Teal
+  'var(--color-ctp-sapphire, var(--ctp-sapphire, #74c7ec))',     // #3 Sapphire
+  'var(--color-ctp-sky, var(--ctp-sky, #89dceb))',               // #4 Sky
+  'var(--color-ctp-lavender, var(--ctp-lavender, #b4bfe2))',     // #5 Lavender
+  'var(--color-ctp-flamingo, var(--ctp-flamingo, #f2cdcd))',     // #6 Flamingo
+  'var(--color-ctp-rosewater, var(--ctp-rosewater, #f5e0dc))',   // #7 Rosewater
+  'var(--color-ctp-subtext0, var(--ctp-subtext0, #a6adc8))',     // #8 Subtext / Other
+];
+
+if (rawLanguages.length <= MAX_ENTRIES) {
+  displayLanguages = rawLanguages.map((lang, index) => ({
+    name: lang.name,
+    bytes: lang.bytes,
+    percentage: lang.percentage,
+    themeColor: themeColors[index % themeColors.length],
+  }));
+} else {
+  const topLangs = rawLanguages.slice(0, MAX_ENTRIES);
+  const otherLangs = rawLanguages.slice(MAX_ENTRIES);
+
+  displayLanguages = topLangs.map((lang, index) => ({
+    name: lang.name,
+    bytes: lang.bytes,
+    percentage: lang.percentage,
+    themeColor: themeColors[index],
+  }));
+
+  let otherBytes = 0;
+  let otherPercentage = 0;
+  for (const lang of otherLangs) {
+    otherBytes += lang.bytes;
+    otherPercentage += lang.percentage;
+  }
+
+  if (otherBytes > 0) {
+    displayLanguages.push({
+      name: 'Other',
+      bytes: otherBytes,
+      percentage: parseFloat(otherPercentage.toFixed(2)),
+      themeColor: themeColors[MAX_ENTRIES],
+    });
+  }
+}
+---
+
+{displayLanguages.length > 0 && (
+  <section class="w-full mt-6">
+    {/* Multi-segment Language Proportion Bar using Theme Colors */}
+    <div class="h-2 w-full rounded-full overflow-hidden flex bg-ctp-surface0/40 gap-[2px] mb-3">
+      {displayLanguages.map((lang) => (
+        <div
+          style={`width: ${lang.percentage}%; background-color: ${lang.themeColor};`}
+          title={`${lang.name}: ${lang.percentage}% (${lang.bytes.toLocaleString()} bytes)`}
+          class="h-full transition-all duration-200 first:rounded-l-full last:rounded-r-full hover:opacity-80"
+        />
+      ))}
+    </div>
+
+    {/* Language Legend List using Distinct Non-overlapping Theme Palette Colors */}
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-mono select-none">
+      {displayLanguages.map((lang) => (
+        <div class="flex items-center gap-1.5" title={`${lang.bytes.toLocaleString()} bytes`}>
+          <span
+            class="w-2 h-2 rounded-full shrink-0"
+            style={`background-color: ${lang.themeColor};`}
+          />
+          <span class="text-ctp-text font-medium">{lang.name}</span>
+          <span class="text-ctp-subtext0 text-[11px]">{lang.percentage.toFixed(1)}%</span>
+        </div>
+      ))}
+    </div>
+  </section>
+)}
