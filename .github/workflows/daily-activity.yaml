@@ -39,15 +39,21 @@ jobs:
           GITHUB_ORG: ${{ vars.GITHUB_ORG || 'pid7-org' }}
         run: npm run github:languages
 
+      - name: Collect GitHub Projects
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+          GITHUB_ORG: ${{ vars.GITHUB_ORG || 'pid7-org' }}
+        run: npm run github:projects
+
       - name: Commit and push updated datasets
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add src/assets/gh-activity.json src/assets/gh-languages.json
+          git add src/assets/gh-activity.json src/assets/gh-languages.json src/assets/gh-projects.json
 
           if git diff --cached --quiet; then
             echo "No data updates to commit."
           else
-            git commit -m "feat(data): update org github activity & languages datasets [skip ci]"
+            git commit -m "feat(data): update org github activity, languages & projects datasets [skip ci]"
             git push
           fi
