@@ -1,4 +1,4 @@
-name: Daily Org GitHub Activity Collector
+name: Daily Org GitHub Activity & Languages Collector
 
 on:
   schedule:
@@ -10,16 +10,16 @@ permissions:
   contents: write
 
 jobs:
-  collect-activity:
+  collect-data:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
@@ -33,15 +33,21 @@ jobs:
           GITHUB_ORG: ${{ vars.GITHUB_ORG || 'pid7-org' }}
         run: npm run github:activity -- --incremental --days 7
 
-      - name: Commit and push updated activity JSON
+      - name: Collect GitHub Languages
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+          GITHUB_ORG: ${{ vars.GITHUB_ORG || 'pid7-org' }}
+        run: npm run github:languages
+
+      - name: Commit and push updated datasets
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add src/assets/gh-activity.json
+          git add src/assets/gh-activity.json src/assets/gh-languages.json
 
           if git diff --cached --quiet; then
-            echo "No activity updates to commit."
+            echo "No data updates to commit."
           else
-            git commit -m "gh-activity: update org github activity dataset [skip ci]"
+            git commit -m "feat(data): update org github activity & languages datasets [skip ci]"
             git push
           fi
