@@ -34,7 +34,10 @@ async function main() {
   const now = new Date();
   const currentYear = now.getUTCFullYear();
   const jan1Str = `${currentYear}-01-01`;
-  const todayStr = now.toISOString().slice(0, 10);
+
+  // Dynamically calculate yesterday in UTC relative to execution time
+  const yesterday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
+  const endDateStr = yesterday.toISOString().slice(0, 10);
 
   console.log(`Starting GitHub activity collector for organization '${org}'...`);
   console.log(`Mode: ${isIncremental ? `Incremental (past ${daysWindow} days)` : 'Full historical backfill'}`);
@@ -50,35 +53,35 @@ async function main() {
     const rawExisting = readFileSync(outputPath, 'utf-8');
     const existingData = JSON.parse(rawExisting) as ActivityDataOutput;
 
-    const windowStartDate = new Date(now.getTime() - daysWindow * 24 * 60 * 60 * 1000);
+    const windowStartDate = new Date(yesterday.getTime() - daysWindow * 24 * 60 * 60 * 1000);
     let windowStartDateStr = windowStartDate.toISOString().slice(0, 10);
     if (windowStartDateStr < jan1Str) {
       windowStartDateStr = jan1Str;
     }
 
     const sinceISO = `${windowStartDateStr}T00:00:00Z`;
-    const untilISO = `${todayStr}T23:59:59Z`;
+    const untilISO = `${endDateStr}T23:59:59Z`;
 
-    console.log(`Collecting recent activity window: ${windowStartDateStr} → ${todayStr}...`);
+    console.log(`Collecting recent activity window: ${windowStartDateStr} → ${endDateStr}...`);
     const events = await collectAllActivity(repos, sinceISO, untilISO);
 
-    const newData = aggregateActivity(events, currentYear, windowStartDateStr, todayStr, repos.length);
-    finalData = mergeActivityData(existingData, newData, windowStartDateStr, todayStr);
+    const newData = aggregateActivity(events, currentYear, windowStartDateStr, endDateStr, repos.length);
+    finalData = mergeActivityData(existingData, newData, windowStartDateStr, endDateStr);
 
     const allDates = Object.keys(finalData.activity);
     reportStartDate = allDates[0] || jan1Str;
-    reportEndDate = allDates[allDates.length - 1] || todayStr;
+    reportEndDate = allDates[allDates.length - 1] || endDateStr;
   } else {
     reportStartDate = jan1Str;
-    reportEndDate = todayStr;
+    reportEndDate = endDateStr;
 
     const sinceISO = `${jan1Str}T00:00:00Z`;
-    const untilISO = `${todayStr}T23:59:59Z`;
+    const untilISO = `${endDateStr}T23:59:59Z`;
 
-    console.log(`Collecting full year activity: ${jan1Str} → ${todayStr}...`);
+    console.log(`Collecting full year activity: ${jan1Str} → ${endDateStr}...`);
     const events = await collectAllActivity(repos, sinceISO, untilISO);
 
-    finalData = aggregateActivity(events, currentYear, jan1Str, todayStr, repos.length);
+    finalData = aggregateActivity(events, currentYear, jan1Str, endDateStr, repos.length);
   }
 
   console.log('Validating output dataset...');
