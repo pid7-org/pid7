@@ -27,7 +27,6 @@ for (const b of Object.values(activityMap)) {
   totalReleases += b.releases;
 }
 
-// Construct 53 weeks grid (Sunday to Saturday)
 const jan1 = new Date(Date.UTC(year, 0, 1));
 const dayOfWeekJan1 = jan1.getUTCDay();
 const startDate = new Date(Date.UTC(year, 0, 1 - dayOfWeekJan1));
@@ -104,13 +103,12 @@ const statsSummary = [
   </h2>
 
   <div class="relative group/graph w-full">
-    {/* Fluid Responsive Grid Spanning 53 Weeks */}
     <div class="w-full overflow-x-auto pb-1 scrollbar-thin">
       <div class="min-w-[640px] w-full">
         <div class="grid grid-cols-[repeat(53,minmax(0,1fr))] gap-[2.5px] w-full">
-          {weeks.map((week) => (
+          {weeks.map((week, colIndex) => (
             <div class="flex flex-col gap-[2.5px] w-full">
-              {week.map((day) => {
+              {week.map((day, rowIndex) => {
                 const titleText = `${day.bucket.total} contribution${day.bucket.total === 1 ? '' : 's'} on ${day.formattedDate} (${day.bucket.commits} commits, ${day.bucket.pull_requests} PRs, ${day.bucket.issues} issues, ${day.bucket.releases} releases)`;
 
                 return (
@@ -123,8 +121,10 @@ const statsSummary = [
                     data-prs={day.bucket.pull_requests}
                     data-issues={day.bucket.issues}
                     data-releases={day.bucket.releases}
+                    data-col={colIndex}
+                    data-row={rowIndex}
                     class:list={[
-                      'w-full aspect-square transition-colors duration-150 relative day-cell cursor-pointer rounded-[1px]',
+                      'w-full aspect-square transition-all duration-150 relative day-cell cursor-pointer rounded-[1px]',
                       !day.isCurrentYear && 'opacity-20 pointer-events-none',
                       day.isCurrentYear && day.level === 0 && 'bg-ctp-surface0/50 hover:bg-ctp-surface0/90',
                       day.isCurrentYear && day.level === 1 && 'bg-[var(--color-accent)]/25 hover:bg-[var(--color-accent)]/40',
@@ -141,7 +141,6 @@ const statsSummary = [
       </div>
     </div>
 
-    {/* Footer Row Below Grid */}
     <div class="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-ctp-subtext0">
       <div>
         <span class="text-ctp-text">{statsSummary}</span>
@@ -160,10 +159,8 @@ const statsSummary = [
       </div>
     </div>
 
-    {/* Languages Breakdown Component */}
     <GithubLanguages />
 
-    {/* Dynamic Interactive Tooltip */}
     <div
       id="gh-tooltip"
       class="fixed hidden z-50 pointer-events-none bg-ctp-base/95 text-ctp-text border border-ctp-surface0 p-2.5 shadow-lg font-mono text-xs space-y-1 transition-opacity duration-150 backdrop-blur-sm"
@@ -183,38 +180,61 @@ const statsSummary = [
 
     const cells = document.querySelectorAll<HTMLElement>('.day-cell');
 
+    function showTooltipForCell(cell: HTMLElement) {
+      const date = cell.dataset.date;
+      const total = parseInt(cell.dataset.total || '0', 10);
+      const commits = parseInt(cell.dataset.commits || '0', 10);
+      const prs = parseInt(cell.dataset.prs || '0', 10);
+      const issues = parseInt(cell.dataset.issues || '0', 10);
+      const releases = parseInt(cell.dataset.releases || '0', 10);
+
+      if (!date) return;
+
+      header!.textContent = `${total} contribution${total === 1 ? '' : 's'} on ${date}`;
+
+      const parts: string[] = [];
+      if (commits > 0) parts.push(`• ${commits} commit${commits === 1 ? '' : 's'}`);
+      if (prs > 0) parts.push(`• ${prs} pull request${prs === 1 ? '' : 's'}`);
+      if (issues > 0) parts.push(`• ${issues} issue${issues === 1 ? '' : 's'}`);
+      if (releases > 0) parts.push(`• ${releases} release${releases === 1 ? '' : 's'}`);
+
+      if (parts.length === 0) {
+        body!.textContent = 'No recorded engineering activity';
+      } else {
+        body!.innerHTML = parts.join('<br/>');
+      }
+
+      tooltip!.classList.remove('hidden');
+
+      const cellRect = cell.getBoundingClientRect();
+      const tRect = tooltip!.getBoundingClientRect();
+      let left = cellRect.left + cellRect.width / 2 - tRect.width / 2;
+      let top = cellRect.top - tRect.height - 8;
+
+      if (left < 10) left = 10;
+      if (left + tRect.width > window.innerWidth - 10) left = window.innerWidth - tRect.width - 10;
+      if (top < 10) top = cellRect.bottom + 8;
+
+      tooltip!.style.left = `${left}px`;
+      tooltip!.style.top = `${top}px`;
+    }
+
     cells.forEach((cell) => {
       cell.addEventListener('mouseenter', (e) => {
-        const date = cell.dataset.date;
-        const total = parseInt(cell.dataset.total || '0', 10);
-        const commits = parseInt(cell.dataset.commits || '0', 10);
-        const prs = parseInt(cell.dataset.prs || '0', 10);
-        const issues = parseInt(cell.dataset.issues || '0', 10);
-        const releases = parseInt(cell.dataset.releases || '0', 10);
-
-        if (!date) return;
-
-        header.textContent = `${total} contribution${total === 1 ? '' : 's'} on ${date}`;
-
-        const parts: string[] = [];
-        if (commits > 0) parts.push(`• ${commits} commit${commits === 1 ? '' : 's'}`);
-        if (prs > 0) parts.push(`• ${prs} pull request${prs === 1 ? '' : 's'}`);
-        if (issues > 0) parts.push(`• ${issues} issue${issues === 1 ? '' : 's'}`);
-        if (releases > 0) parts.push(`• ${releases} release${releases === 1 ? '' : 's'}`);
-
-        if (parts.length === 0) {
-          body.textContent = 'No recorded engineering activity';
-        } else {
-          body.innerHTML = parts.join('<br/>');
-        }
-
-        tooltip.classList.remove('hidden');
-        positionTooltip(e);
+        showTooltipForCell(cell);
       });
 
-      cell.addEventListener('mousemove', positionTooltip);
-
       cell.addEventListener('mouseleave', () => {
+        if (document.activeElement !== cell) {
+          tooltip.classList.add('hidden');
+        }
+      });
+
+      cell.addEventListener('focus', () => {
+        showTooltipForCell(cell);
+      });
+
+      cell.addEventListener('blur', () => {
         tooltip.classList.add('hidden');
       });
     });
