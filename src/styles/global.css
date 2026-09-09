@@ -49,14 +49,14 @@ html, body, * {
   }
 
   body {
-    background-color: color-mix(in srgb, var(--color-ctp-base) 85%, var(--color-accent) 15%) !important;
+    background-color: var(--color-ctp-base) !important;
     color: var(--color-ctp-text);
     font-family: var(--font-mono);
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   html.latte body {
-    background-color: color-mix(in srgb, var(--color-ctp-base) 88%, var(--color-accent) 12%) !important;
+    background-color: var(--color-ctp-base) !important;
   }
 }
 

@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { flavors } from '@catppuccin/palette';
 
 interface Props {
   title?: string;
@@ -98,7 +99,8 @@ const jsonLd = type === 'article' ? {
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 		<meta name="apple-mobile-web-app-title" content="pid7" />
 		<meta name="application-name" content="pid7" />
-		<meta name="theme-color" content="#24273a" />
+		<meta name="theme-color" media="(prefers-color-scheme: dark)" content={flavors.macchiato.colors.base.hex} />
+		<meta name="theme-color" media="(prefers-color-scheme: light)" content={flavors.latte.colors.base.hex} />
 		<link rel="manifest" href="/site.webmanifest" />
 
 		<meta property="og:type" content={type} />

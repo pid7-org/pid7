@@ -18,7 +18,7 @@
 - **Styling**: Tailwind CSS v4 + `@catppuccin/tailwindcss` + `@tailwindcss/typography`.
   - **Themes**: Dark (Catppuccin Macchiato, default) / Light (Catppuccin Latte).
   - **Accents**: `--color-accent` (`peach`, default / `mono`, `yellow`, `mauve`, `blue`, `green`).
-  - **Dynamic Tint**: Body background dynamically blends base color with active accent color via `color-mix()`.
+  - **Theme Background**: Body background uses clean theme base color (`var(--color-ctp-base)`) without accent tinting.
 - **Fonts**:
   - Logo/Header: `Playwrite US Trad` (`var(--font-playwrite)`)
   - Headings: `Space Grotesk` (`var(--font-serif)`)
