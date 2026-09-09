@@ -1,0 +1,786 @@
+---
+import { getAllBlogPosts, formatBlogDate } from '../lib/blog';
+import { projects, team } from '../lib/projects';
+
+const rawPosts = await getAllBlogPosts();
+const blogPosts = rawPosts.map((p) => ({
+  slug: p.frontmatter.slug,
+  title: p.frontmatter.title,
+  created: formatBlogDate(p.frontmatter.created),
+  description: p.frontmatter.description || '',
+}));
+---
+
+<!-- Sticky Docked Bottom Bar (Collapsed) -->
+<div
+  id="cli-dock"
+  role="button"
+  tabindex="0"
+  aria-label="Open terminal"
+  class="fixed left-0 right-0 bottom-0 z-40 h-9 bg-ctp-crust/95 backdrop-blur-md border-t border-ctp-surface0/60 px-4 sm:px-6 flex items-center justify-between text-xs font-mono select-none cursor-pointer hover:border-[var(--color-accent)]/50 transition-all duration-150"
+>
+  <div class="flex items-center gap-2 min-w-0">
+    <span class="text-[var(--color-accent)] font-semibold shrink-0">~/pid7 ❯</span>
+    <span class="text-ctp-subtext0/60 truncate">terminal</span>
+    <span class="inline-block w-1.5 h-3 bg-[var(--color-accent)] animate-pulse shrink-0"></span>
+  </div>
+
+  <div class="flex items-center gap-2 text-ctp-subtext0/50 text-[11px] shrink-0">
+    <span class="hidden sm:inline">type to open</span>
+    <kbd class="px-1.5 py-0.5 rounded border border-ctp-surface0 bg-ctp-surface0/30 text-[10px]">esc</kbd>
+  </div>
+</div>
+
+<!-- Expanded Terminal Drawer (No window header, pure terminal stream) -->
+<div
+  id="cli-shell"
+  aria-label="Terminal shell"
+  class="fixed left-0 right-0 bottom-0 z-50 bg-ctp-crust/98 backdrop-blur-md border-t border-ctp-surface0/70 overflow-hidden shadow-2xl font-mono flex flex-col transition-[height] duration-200 ease-out"
+  style="height: 0px;"
+>
+  <div class="flex-1 max-w-screen-md w-full mx-auto flex flex-col min-h-0 px-4 sm:px-6">
+    <!-- Scrollable Terminal Body -->
+    <div
+      id="cli-terminal-body"
+      class="flex-1 overflow-y-auto overscroll-contain py-4 text-xs leading-relaxed space-y-2.5 select-text min-h-0"
+    >
+      <!-- History / Output Log -->
+      <div id="cli-output" class="space-y-2.5"></div>
+
+      <!-- Active Minimal Prompt Line -->
+      <div class="flex items-center gap-2 pt-1" id="cli-prompt-line">
+        <span class="text-[var(--color-accent)] font-semibold shrink-0 select-none" id="cli-prompt-label">~/pid7 ❯</span>
+        <input
+          id="cli-input"
+          type="text"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          class="flex-1 bg-transparent border-none outline-none font-mono text-xs text-ctp-text caret-[var(--color-accent)] p-0 m-0"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  #cli-terminal-body {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  #cli-terminal-body::-webkit-scrollbar {
+    display: none !important;
+    width: 0px !important;
+    height: 0px !important;
+    background: transparent !important;
+  }
+</style>
+
+<script is:inline define:vars={{ blogPosts, projects, team }}>
+  (function () {
+    const TERMINAL_HEIGHT = 470;
+
+    let isOpen = false;
+    let currentDir = '~';
+
+    const commandHistory = [];
+    let historyIndex = -1;
+
+    const dock = document.getElementById('cli-dock');
+    const shell = document.getElementById('cli-shell');
+    const input = document.getElementById('cli-input');
+    const output = document.getElementById('cli-output');
+    const terminalBody = document.getElementById('cli-terminal-body');
+    const promptLabel = document.getElementById('cli-prompt-label');
+
+    const accents = ['peach', 'mono', 'yellow', 'mauve', 'blue', 'green'];
+
+    // File metadata structure supporting ls, ls -l, ls -a, ls -lA
+    const filesMeta = {
+      '~': [
+        { name: '.', isDir: true, perms: 'dr-xr-xr-x', hidden: true },
+        { name: '..', isDir: true, perms: 'dr-xr-xr-x', hidden: true },
+        { name: 'blog', isDir: true, perms: 'dr-xr-xr-x' },
+        ...projects.map((p) => ({
+          name: p.name,
+          isDir: false,
+          isProject: true,
+          perms: '-r--r--r--'
+        })),
+        { name: 'about.txt', isDir: false, perms: '-r--r--r--' },
+        { name: 'team.txt', isDir: false, perms: '-r--r--r--' }
+      ],
+      '~/blog': [
+        { name: '.', isDir: true, perms: 'dr-xr-xr-x', hidden: true },
+        { name: '..', isDir: true, perms: 'dr-xr-xr-x', hidden: true },
+        ...blogPosts.map((p) => ({
+          name: p.slug + '.md',
+          isDir: false,
+          perms: '-r--r--r--'
+        }))
+      ]
+    };
+
+    function getPromptString() {
+      return currentDir === '~' ? '~/pid7 ❯' : `~/pid7/${currentDir.replace('~/', '')} ❯`;
+    }
+
+    function updatePrompt(lastFailed = false) {
+      if (promptLabel) {
+        promptLabel.textContent = getPromptString();
+        promptLabel.className = lastFailed
+          ? 'text-ctp-red font-semibold shrink-0 select-none transition-colors'
+          : 'text-[var(--color-accent)] font-semibold shrink-0 select-none transition-colors';
+      }
+    }
+
+    function getTargetHeight() {
+      const maxAllowed = Math.floor(window.innerHeight * 0.85);
+      return Math.min(TERMINAL_HEIGHT, maxAllowed);
+    }
+
+    function openTerminal() {
+      if (isOpen) return;
+      isOpen = true;
+
+      shell.style.height = getTargetHeight() + 'px';
+      if (dock) {
+        dock.style.opacity = '0';
+        dock.style.pointerEvents = 'none';
+      }
+
+      setTimeout(() => {
+        input?.focus();
+        scrollToBottom();
+      }, 50);
+    }
+
+    function closeTerminal() {
+      if (!isOpen) return;
+      isOpen = false;
+
+      shell.style.height = '0px';
+      if (dock) {
+        dock.style.opacity = '1';
+        dock.style.pointerEvents = 'auto';
+      }
+
+      input?.blur();
+    }
+
+    function scrollToBottom() {
+      if (terminalBody) {
+        terminalBody.scrollTop = terminalBody.scrollHeight;
+      }
+    }
+
+    // Clicking anywhere in the terminal window focuses the input
+    terminalBody?.addEventListener('click', () => {
+      input?.focus();
+    });
+
+    dock?.addEventListener('click', openTerminal);
+
+    // Global Key Listener: focus on letter or number keystroke, close on 'esc'
+    window.addEventListener('keydown', (e) => {
+      const activeEl = document.activeElement;
+      const isInputActive =
+        activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.tagName === 'SELECT' ||
+          activeEl.isContentEditable);
+
+      // Close when Escape is pressed
+      if (e.key === 'Escape') {
+        if (isOpen) {
+          e.preventDefault();
+          closeTerminal();
+        }
+        return;
+      }
+
+      // Ignore modifier combinations (Ctrl+C, Cmd+R, etc.)
+      if (e.ctrlKey || e.metaKey || e.altKey) {
+        return;
+      }
+
+      // If user is already interacting with another input/field, don't intercept
+      if (isInputActive && activeEl !== input) {
+        return;
+      }
+
+      // If terminal is closed, any letter/number key opens terminal at the bottom & accepts input
+      if (!isOpen) {
+        const isLetterOrNumber = /^[a-zA-Z0-9/]$/.test(e.key);
+        if (isLetterOrNumber) {
+          e.preventDefault();
+          openTerminal();
+          if (input) {
+            input.value = e.key;
+            input.focus();
+          }
+        }
+      }
+    });
+
+    // Terminal Input Key Navigation (Enter, Up, Down, Tab)
+    input?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const cmd = input.value.trim();
+        if (cmd) {
+          commandHistory.push(cmd);
+          historyIndex = commandHistory.length;
+          executeCommand(cmd);
+          input.value = '';
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (commandHistory.length > 0 && historyIndex > 0) {
+          historyIndex--;
+          input.value = commandHistory[historyIndex];
+        }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (historyIndex < commandHistory.length - 1) {
+          historyIndex++;
+          input.value = commandHistory[historyIndex];
+        } else {
+          historyIndex = commandHistory.length;
+          input.value = '';
+        }
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+        handleTabCompletion();
+      }
+    });
+
+    const knownCommands = [
+      'help',
+      'ls',
+      'cat',
+      'cd',
+      'pwd',
+      'whoami',
+      'uname',
+      'neofetch',
+      'projects',
+      'posts',
+      'team',
+      'theme',
+      'accent',
+      'history',
+      'uptime',
+      'id',
+      'curl',
+      'sudo',
+      'date',
+      'echo',
+      'clear',
+      'exit'
+    ];
+
+    function getSuggestion(query) {
+      const q = query.toLowerCase();
+      const subMatch = knownCommands.find((c) => c.startsWith(q) || (q.length > 2 && c.includes(q)));
+      if (subMatch) return subMatch;
+
+      let bestMatch = null;
+      let minDistance = 3;
+      for (const cmd of knownCommands) {
+        const dist = levenshtein(q, cmd);
+        if (dist < minDistance) {
+          minDistance = dist;
+          bestMatch = cmd;
+        }
+      }
+      return bestMatch;
+    }
+
+    function levenshtein(a, b) {
+      const m = a.length, n = b.length;
+      const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+      for (let i = 0; i <= m; i++) dp[i][0] = i;
+      for (let j = 0; j <= n; j++) dp[0][j] = j;
+      for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+          dp[i][j] = a[i - 1] === b[j - 1]
+            ? dp[i - 1][j - 1]
+            : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+        }
+      }
+      return dp[m][n];
+    }
+
+    function handleTabCompletion() {
+      if (!input) return;
+      const text = input.value.trim();
+      if (!text) return;
+
+      const parts = text.split(/\s+/);
+      if (parts.length === 1) {
+        const prefix = parts[0].toLowerCase();
+        const match = knownCommands.find((c) => c.startsWith(prefix));
+        if (match) {
+          input.value = match + ' ';
+        }
+      } else if (parts.length >= 2 && (parts[0] === 'cat' || parts[0] === 'cd')) {
+        let candidates = filesMeta[currentDir] || filesMeta['~'];
+        if (parts[0] === 'cd') {
+          candidates = candidates.filter((f) => f.isDir && f.name !== '.');
+        } else if (parts[0] === 'cat') {
+          candidates = candidates.filter((f) => !f.isDir);
+        }
+        const files = candidates.map((f) => f.name);
+        const prefix = parts[parts.length - 1].toLowerCase();
+        const match = files.find((f) => f.toLowerCase().startsWith(prefix));
+        if (match) {
+          parts[parts.length - 1] = match;
+          input.value = parts.join(' ');
+        }
+      } else if (parts.length === 2 && parts[0] === 'theme') {
+        const themes = ['macchiato', 'latte'];
+        const match = themes.find((t) => t.startsWith(parts[1].toLowerCase()));
+        if (match) {
+          input.value = `theme ${match}`;
+        }
+      } else if (parts.length === 2 && parts[0] === 'accent') {
+        const match = accents.find((a) => a.startsWith(parts[1].toLowerCase()));
+        if (match) {
+          input.value = `accent ${match}`;
+        }
+      }
+    }
+
+    function appendOutput(html) {
+      if (!output) return;
+      const entry = document.createElement('div');
+      entry.className = 'space-y-1';
+      entry.innerHTML = html;
+      output.appendChild(entry);
+      scrollToBottom();
+    }
+
+    function executeCommand(rawCommand) {
+      const trimmed = rawCommand.trim();
+      if (!trimmed) return;
+
+      const [command, ...args] = trimmed.split(/\s+/);
+      const cmdLower = command.toLowerCase();
+      const target = args[0] ? args[0].toLowerCase() : '';
+      const fullArgs = args.join(' ');
+
+      const promptStr = getPromptString();
+      const cmdHeader = `<div class="flex items-center gap-2 text-ctp-text">
+        <span class="text-[var(--color-accent)] font-semibold select-none">${promptStr}</span>
+        <span>${escapeHtml(trimmed)}</span>
+      </div>`;
+
+      let responseHtml = '';
+      let commandFailed = false;
+
+      switch (cmdLower) {
+        case 'help':
+          responseHtml = `
+            <div class="text-ctp-subtext0 space-y-1">
+              <div class="text-ctp-text font-medium">available commands:</div>
+              <div class="grid grid-cols-[100px_1fr] gap-x-2 gap-y-0.5 text-[11px]">
+                <span class="text-[var(--color-accent)]">ls [-l, -a, -A]</span><span>list files & directories</span>
+                <span class="text-[var(--color-accent)]">cat &lt;file&gt;</span><span>read project, post, or file</span>
+                <span class="text-[var(--color-accent)]">cd &lt;dir&gt;</span><span>change directory (~, blog, ..)</span>
+                <span class="text-[var(--color-accent)]">projects</span><span>list core software repositories</span>
+                <span class="text-[var(--color-accent)]">posts</span><span>list published blog articles</span>
+                <span class="text-[var(--color-accent)]">team</span><span>list team members</span>
+                <span class="text-[var(--color-accent)]">theme &lt;opt&gt;</span><span>set theme: macchiato, latte</span>
+                <span class="text-[var(--color-accent)]">accent &lt;opt&gt;</span><span>set accent: peach, mauve, blue...</span>
+                <span class="text-[var(--color-accent)]">whoami</span><span>print user identity</span>
+                <span class="text-[var(--color-accent)]">uname</span><span>system info card</span>
+                <span class="text-[var(--color-accent)]">history</span><span>command execution history</span>
+                <span class="text-[var(--color-accent)]">clear</span><span>clear terminal screen</span>
+                <span class="text-[var(--color-accent)]">exit</span><span>close terminal (or esc)</span>
+              </div>
+            </div>
+          `;
+          break;
+
+        case 'ls':
+        case 'dir':
+          const flagArgs = args.filter((a) => a.startsWith('-')).join('');
+          const nonFlagArgs = args.filter((a) => !a.startsWith('-'));
+          const isLong = flagArgs.includes('l');
+          const isAll = flagArgs.includes('a');
+          const isAlmostAll = flagArgs.includes('A');
+
+          // Check if specific directory targeted: e.g. ls blog or ls ~/blog
+          let targetPath = currentDir;
+          if (nonFlagArgs.length > 0) {
+            const dirArg = nonFlagArgs[0].toLowerCase().replace(/\/$/, '');
+            if (dirArg === 'blog' || dirArg === '~/blog') {
+              targetPath = '~/blog';
+            } else if (dirArg === '~' || dirArg === '.') {
+              targetPath = currentDir;
+            } else {
+              responseHtml = `<div class="text-ctp-subtext0">ls: cannot access '${escapeHtml(nonFlagArgs[0])}': No such file or directory</div>`;
+              commandFailed = true;
+              break;
+            }
+          }
+
+          const rawList = filesMeta[targetPath] || filesMeta['~'];
+          let filtered = rawList;
+
+          if (isAll) {
+            // Include everything (. and .. and hidden)
+            filtered = rawList;
+          } else if (isAlmostAll) {
+            // Include all hidden files EXCEPT . and ..
+            filtered = rawList.filter((f) => f.name !== '.' && f.name !== '..');
+          } else {
+            // Normal: exclude hidden
+            filtered = rawList.filter((f) => !f.hidden);
+          }
+
+          if (isLong) {
+            // Long listing format: permissions, owner, filename (read-only permissions)
+            const linesHtml = filtered
+              .map((f) => {
+                const nameCls = f.isDir
+                  ? 'text-ctp-blue font-semibold'
+                  : f.isProject
+                    ? 'text-[var(--color-accent)] font-medium'
+                    : 'text-ctp-text';
+                const displayName = f.isDir && f.name !== '.' && f.name !== '..' ? f.name + '/' : f.name;
+                return `<div class="grid grid-cols-[90px_45px_1fr] gap-x-3 whitespace-pre font-mono text-[11px] items-center">
+                  <span class="text-ctp-subtext0/70">${f.perms}</span>
+                  <span class="text-ctp-subtext0/50">pid7</span>
+                  <span class="${nameCls}">${displayName}</span>
+                </div>`;
+              })
+              .join('');
+
+            responseHtml = `<div class="space-y-0.5">${linesHtml}</div>`;
+          } else {
+            // Compact horizontal listing format
+            responseHtml = `
+              <div class="flex flex-wrap gap-x-6 gap-y-1 text-ctp-subtext0">
+                ${filtered
+                  .map((f) => {
+                    const isDir = f.isDir && f.name !== '.' && f.name !== '..';
+                    const colorCls = f.isDir
+                      ? 'text-ctp-blue font-semibold'
+                      : f.isProject
+                        ? 'text-[var(--color-accent)] font-medium'
+                        : 'text-ctp-text';
+                    const displayName = isDir ? f.name + '/' : f.name;
+                    return `<span class="${colorCls}">${displayName}</span>`;
+                  })
+                  .join('')}
+              </div>
+            `;
+          }
+          break;
+
+
+        case 'history':
+          if (commandHistory.length === 0) {
+            responseHtml = `<div class="text-ctp-subtext0">No commands in history.</div>`;
+          } else {
+            const histHtml = commandHistory
+              .map((cmd, i) => `<div><span class="text-ctp-subtext0/50 w-6 inline-block">${i + 1}</span> <span>${escapeHtml(cmd)}</span></div>`)
+              .join('');
+            responseHtml = `<div class="space-y-0.5 text-ctp-subtext0 text-[11px]">${histHtml}</div>`;
+          }
+          break;
+
+
+        case 'uptime':
+          responseHtml = `<div class="text-ctp-subtext0 text-[11px]">pid7-sh up 42 days, 7:07, 1 user, load averages: 0.07 0.07 0.07</div>`;
+          break;
+
+        case 'id':
+          responseHtml = `<div class="text-ctp-subtext0 text-[11px]">uid=1000(visitor) gid=1000(visitor) groups=1000(visitor),4(adm),27(sudo)</div>`;
+          break;
+
+        case 'sudo':
+          responseHtml = `<div class="text-ctp-red text-[11px]">visitor is not in the sudoers file. This incident will be reported to Sher 🐾</div>`;
+          commandFailed = true;
+          break;
+
+        case 'curl':
+          const urlArg = args[0] || 'pid7.org';
+          responseHtml = `
+            <div class="text-[11px] text-ctp-subtext0 space-y-1">
+              <div class="text-ctp-text">HTTP/2 200 OK</div>
+              <div>content-type: text/html; charset=UTF-8</div>
+              <div>server: cloudflare</div>
+              <div class="text-[var(--color-accent)]">pid7 × engineering ideas into reality</div>
+            </div>
+          `;
+          break;
+
+        case 'touch':
+        case 'mkdir':
+        case 'rm':
+          responseHtml = `<div class="text-ctp-subtext0 text-[11px]">${cmdLower}: cannot execute: filesystem is read-only for visitor session.</div>`;
+          commandFailed = true;
+          break;
+
+        case 'cd':
+          const cleanTarget = target.replace(/\/+$/, '');
+          if (!cleanTarget || cleanTarget === '~' || cleanTarget === '/') {
+            currentDir = '~';
+          } else if (cleanTarget === '.') {
+            // Stay in current directory
+          } else if (cleanTarget === '..') {
+            currentDir = '~';
+          } else if (currentDir === '~' && (cleanTarget === 'blog' || cleanTarget === './blog')) {
+            currentDir = '~/blog';
+          } else {
+            const files = filesMeta[currentDir] || [];
+            const found = files.find((f) => f.name === cleanTarget);
+            if (found && !found.isDir) {
+              responseHtml = `<div class="text-ctp-subtext0">cd: not a directory: ${escapeHtml(args[0])}</div>`;
+            } else {
+              responseHtml = `<div class="text-ctp-subtext0">cd: no such file or directory: ${escapeHtml(args[0])}</div>`;
+            }
+            commandFailed = true;
+            break;
+          }
+          break;
+
+        case 'pwd':
+          responseHtml = `<div class="text-ctp-subtext0">${currentDir === '~' ? '/home/pid7' : '/home/pid7/blog'}</div>`;
+          break;
+
+        case 'cat':
+          if (!target) {
+            responseHtml = `<div class="text-ctp-subtext0">usage: cat &lt;file&gt;</div>`;
+            commandFailed = true;
+            break;
+          }
+
+          const foundProj = projects.find((p) => p.name.toLowerCase() === target.toLowerCase());
+          if (foundProj) {
+            responseHtml = `
+              <div class="text-ctp-subtext0 space-y-1">
+                <div class="text-ctp-text font-medium">${foundProj.name}</div>
+                <div>${foundProj.desc}</div>
+                <div>repo: <a href="${foundProj.url}" target="_blank" rel="noreferrer" class="text-[var(--color-accent)] underline">${foundProj.url.replace(/^https?:\/\//, '')}</a></div>
+              </div>
+            `;
+          } else if (target === 'about.txt' || target === 'about') {
+            responseHtml = `
+              <div class="text-ctp-subtext0 space-y-1">
+                <div class="text-ctp-text font-medium">pid7 × engineering ideas into reality</div>
+                <div>Systems engineering, low-level data structures, SIMD acceleration, and minimalist web experiences.</div>
+              </div>
+            `;
+          } else if (target === 'team.txt' || target === 'team') {
+            responseHtml = `
+              <div class="text-ctp-subtext0 space-y-1">
+                ${team.map((m) => `<div><span class="text-ctp-text font-medium">${m.name}</span> (${m.role}) — ${m.bio}</div>`).join('')}
+              </div>
+            `;
+          } else {
+            const cleanSlug = target.replace(/\.md$/, '');
+            const foundPost = blogPosts.find((p) => p.slug === cleanSlug);
+            if (foundPost) {
+              responseHtml = `
+                <div class="text-ctp-subtext0 space-y-1">
+                  <div class="text-ctp-text font-medium">${foundPost.title}</div>
+                  <div class="text-[11px] text-ctp-subtext0/70">${foundPost.created}</div>
+                  <div>${foundPost.description}</div>
+                  <div>read: <a href="/blog/${foundPost.slug}" class="text-[var(--color-accent)] underline">/blog/${foundPost.slug}</a></div>
+                </div>
+              `;
+            } else {
+              responseHtml = `<div class="text-ctp-subtext0">cat: ${escapeHtml(args[0])}: No such file or directory</div>`;
+              commandFailed = true;
+            }
+          }
+          break;
+
+        case 'projects':
+        case 'building':
+          responseHtml = `
+            <div class="space-y-1 text-ctp-subtext0">
+              ${projects
+                .map(
+                  (p) => `
+                <div>
+                  <a href="${p.url}" target="_blank" rel="noreferrer" class="text-ctp-text font-medium hover:text-[var(--color-accent)] underline">
+                    ${p.name}
+                  </a>
+                  <span> — ${p.desc}</span>
+                </div>
+              `
+                )
+                .join('')}
+            </div>
+          `;
+          break;
+
+        case 'posts':
+        case 'blog':
+          if (blogPosts && blogPosts.length > 0) {
+            responseHtml = `
+              <div class="space-y-1 text-ctp-subtext0">
+                ${blogPosts
+                  .map(
+                    (p) => `
+                  <div class="flex items-baseline justify-between gap-2">
+                    <a href="/blog/${p.slug}" class="text-ctp-text font-medium hover:text-[var(--color-accent)] underline">
+                      ${p.title}
+                    </a>
+                    <span class="text-[11px] text-ctp-subtext0/60 shrink-0">${p.created}</span>
+                  </div>
+                `
+                  )
+                  .join('')}
+              </div>
+            `;
+          } else {
+            responseHtml = `<div class="text-ctp-subtext0">No posts found.</div>`;
+          }
+          break;
+
+        case 'team':
+        case 'who':
+          responseHtml = `
+            <div class="space-y-1 text-ctp-subtext0">
+              ${team.map((m) => `<div><span class="text-ctp-text font-medium">${m.name}</span> <span class="text-[var(--color-accent)]">(${m.role})</span> — ${m.bio}</div>`).join('')}
+            </div>
+          `;
+          break;
+
+        case 'whoami':
+          responseHtml = `<div class="text-ctp-subtext0">visitor@pid7.org (guest)</div>`;
+          break;
+
+        case 'uname':
+        case 'neofetch':
+        case 'fetch':
+          const currentTheme = document.documentElement.classList.contains('latte') ? 'Latte' : 'Macchiato';
+          const activeAccent = document.documentElement.getAttribute('data-accent') || 'peach';
+          responseHtml = `
+            <div class="text-ctp-subtext0 space-y-0.5 text-[11px]">
+              <div><span class="text-[var(--color-accent)] font-semibold">OS:</span> pid7-linux x86_64</div>
+              <div><span class="text-[var(--color-accent)] font-semibold">Host:</span> pid7.org (Astro v7 static)</div>
+              <div><span class="text-[var(--color-accent)] font-semibold">Theme:</span> Catppuccin ${currentTheme}</div>
+              <div><span class="text-[var(--color-accent)] font-semibold">Accent:</span> ${activeAccent}</div>
+              <div><span class="text-[var(--color-accent)] font-semibold">Shell:</span> pid7-sh v1.0.0</div>
+            </div>
+          `;
+          break;
+
+
+        case 'date':
+          responseHtml = `<div class="text-ctp-subtext0">${new Date().toUTCString()}</div>`;
+          break;
+
+        case 'echo':
+          responseHtml = `<div class="text-ctp-subtext0">${escapeHtml(fullArgs)}</div>`;
+          break;
+
+        case 'theme':
+          const currentThemeName = document.documentElement.classList.contains('latte') ? 'latte' : 'macchiato';
+          const validThemes = ['macchiato', 'latte', 'dark', 'light'];
+          if (!target || !validThemes.includes(target.toLowerCase())) {
+            responseHtml = `
+              <div class="text-ctp-subtext0 space-y-0.5 text-[11px]">
+                <div>current theme: <span class="text-[var(--color-accent)] font-semibold">${currentThemeName}</span></div>
+                <div>usage: theme &lt;macchiato | latte&gt;</div>
+              </div>
+            `;
+            if (target) commandFailed = true;
+            break;
+          }
+
+          const chosenTheme = (target.toLowerCase() === 'latte' || target.toLowerCase() === 'light') ? 'latte' : 'macchiato';
+          if (chosenTheme === 'latte') {
+            document.documentElement.classList.remove('dark', 'macchiato');
+            document.documentElement.classList.add('latte');
+            localStorage.setItem('theme', 'latte');
+            responseHtml = `<div>theme set to: <span class="text-[var(--color-accent)] font-semibold">latte</span></div>`;
+          } else {
+            document.documentElement.classList.remove('dark', 'macchiato');
+            document.documentElement.classList.add('dark', 'macchiato');
+            localStorage.setItem('theme', 'dark');
+            responseHtml = `<div>theme set to: <span class="text-[var(--color-accent)] font-semibold">macchiato</span></div>`;
+          }
+          break;
+
+        case 'accent':
+          const currentAccent = document.documentElement.getAttribute('data-accent') || 'peach';
+          if (!target || !accents.includes(target.toLowerCase())) {
+            responseHtml = `
+              <div class="text-ctp-subtext0 space-y-0.5 text-[11px]">
+                <div>current accent: <span class="text-[var(--color-accent)] font-semibold">${currentAccent}</span></div>
+                <div>usage: accent &lt;color&gt;</div>
+                <div class="text-ctp-subtext0/70">options: ${accents.join(', ')}</div>
+              </div>
+            `;
+            if (target) commandFailed = true;
+            break;
+          }
+
+          const targetAccent = target.toLowerCase();
+          document.documentElement.setAttribute('data-accent', targetAccent);
+          localStorage.setItem('accent', targetAccent);
+
+          const accentBtn = document.getElementById('accent-toggle');
+          if (accentBtn) {
+            const isLatteNow = document.documentElement.classList.contains('latte');
+            const accentVar = isLatteNow
+              ? `var(--ctp-latte-${targetAccent === 'mono' ? 'text' : targetAccent})`
+              : `var(--ctp-macchiato-${targetAccent === 'mono' ? 'text' : targetAccent})`;
+            accentBtn.style.backgroundColor = accentVar;
+          }
+
+          responseHtml = `<div>accent set to: <span class="text-[var(--color-accent)] font-semibold">${targetAccent}</span></div>`;
+          break;
+
+        case 'clear':
+          if (output) output.innerHTML = '';
+          updatePrompt(false);
+          return;
+
+        case 'exit':
+        case 'close':
+          closeTerminal();
+          return;
+
+        default:
+          const suggestion = getSuggestion(cmdLower);
+          responseHtml = `
+            <div class="space-y-0.5">
+              <div>
+                <span class="text-ctp-red">command not found:</span> <span class="text-ctp-text font-medium">${escapeHtml(trimmed)}</span>
+              </div>
+              ${
+                suggestion
+                  ? `<div class="text-[11px] text-ctp-subtext0/70">did you mean <span class="text-[var(--color-accent)] font-medium">${suggestion}</span>?</div>`
+                  : `<div class="text-[11px] text-ctp-subtext0/60">type <span class="text-[var(--color-accent)] font-medium">help</span> to view available commands</div>`
+              }
+            </div>
+          `;
+          commandFailed = true;
+          break;
+      }
+
+      updatePrompt(commandFailed);
+      appendOutput(`${cmdHeader}<div class="text-ctp-subtext0 leading-relaxed">${responseHtml}</div>`);
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  })();
+</script>
