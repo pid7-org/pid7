@@ -49,14 +49,14 @@ $$
 `;
 
 describe('Markdown Parser Unit Tests (Isolated Dummy Post)', () => {
-  it('correctly parses frontmatter properties and converts tag hyphens to spaces', () => {
+  it('correctly parses frontmatter properties including tags', () => {
     const { frontmatter } = parseFrontmatter(DUMMY_MARKDOWN_POST);
     expect(frontmatter.slug).toBe('dummy-unit-test-post');
     expect(frontmatter.title).toBe('Dummy Unit Test Post Title');
     expect(frontmatter.created).toBe('01-09-2026');
     expect(frontmatter.lastUpdated).toBe('05-09-2026');
     expect(frontmatter.description).toBe('Test post custom SEO description.');
-    expect(frontmatter.tags).toEqual(['Rust', 'SIMD', 'substring search']);
+    expect(frontmatter.tags).toEqual(['Rust', 'SIMD', 'substring-search']);
   });
 
   it('renders custom angle code blocks <> with captions', async () => {

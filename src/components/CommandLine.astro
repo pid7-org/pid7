@@ -8,7 +8,12 @@ const blogPosts = rawPosts.map((p) => ({
   title: p.frontmatter.title,
   created: formatBlogDate(p.frontmatter.created),
   description: p.frontmatter.description || '',
+  tags: p.frontmatter.tags || [],
 }));
+
+const allTags = Array.from(
+  new Set(blogPosts.flatMap((p) => (p.tags || []).map((t: string) => t.toLowerCase())))
+).sort();
 ---
 
 <div
@@ -107,7 +112,7 @@ const blogPosts = rawPosts.map((p) => ({
   }
 </style>
 
-<script is:inline define:vars={{ blogPosts, projects, team }}>
+<script is:inline define:vars={{ blogPosts, projects, team, allTags }}>
   (function () {
     const dock = document.getElementById('cli-dock');
     const shell = document.getElementById('cli-shell');
@@ -289,6 +294,7 @@ const blogPosts = rawPosts.map((p) => ({
       'neofetch',
       'projects',
       'posts',
+      'search',
       'team',
       'theme',
       'accent',
@@ -438,6 +444,19 @@ const blogPosts = rawPosts.map((p) => ({
             input.setSelectionRange(input.value.length, input.value.length);
           }
         }
+      } else if (parts.length >= 1 && parts[0] === 'search') {
+        const prefix = (parts.length === 2 && !endsWithSpace) ? parts[1].replace(/^#/, '').toLowerCase() : '';
+        const matches = prefix ? allTags.filter((t) => t.startsWith(prefix)) : allTags;
+        if (matches.length > 0) {
+          if (lastTabPrefix === prefix) {
+            tabMatchIndex = (tabMatchIndex + 1) % matches.length;
+          } else {
+            lastTabPrefix = prefix;
+            tabMatchIndex = 0;
+          }
+          input.value = `search ${matches[tabMatchIndex]}`;
+          input.setSelectionRange(input.value.length, input.value.length);
+        }
       }
     }
 
@@ -479,6 +498,7 @@ const blogPosts = rawPosts.map((p) => ({
                 <span class="text-[var(--color-accent)]">cd &lt;dir&gt;</span><span>change directory (~, blog, ..)</span>
                 <span class="text-[var(--color-accent)]">projects</span><span>list core software repositories</span>
                 <span class="text-[var(--color-accent)]">posts</span><span>list published blog articles</span>
+                <span class="text-[var(--color-accent)]">search &lt;tag&gt;</span><span>search blog posts by tag</span>
                 <span class="text-[var(--color-accent)]">team</span><span>list team members</span>
                 <span class="text-[var(--color-accent)]">theme &lt;opt&gt;</span><span>set theme: macchiato, latte</span>
                 <span class="text-[var(--color-accent)]">accent &lt;opt&gt;</span><span>set accent: peach, mauve, blue...</span>
@@ -746,6 +766,67 @@ const blogPosts = rawPosts.map((p) => ({
           } else {
             responseHtml = `<div class="text-ctp-subtext0">No posts found.</div>`;
           }
+          break;
+
+        case 'search':
+          const queryTag = target ? target.replace(/^#/, '').toLowerCase() : '';
+          if (!queryTag) {
+            responseHtml = `
+              <div class="text-ctp-subtext0 space-y-1">
+                <div>usage: <span class="text-ctp-text">search &lt;tag&gt;</span></div>
+                ${allTags && allTags.length > 0 ? `<div class="text-[11px]">available tags: ${allTags.map((t) => `<span class="text-[var(--color-accent)]">${t}</span>`).join(', ')}</div>` : '<div>no blog tags found.</div>'}
+              </div>
+            `;
+            if (args.length > 0) commandFailed = true;
+            break;
+          }
+
+          const matchedPosts = blogPosts.filter((p) =>
+            p.tags && p.tags.some((t) => t.toLowerCase() === queryTag || t.toLowerCase().includes(queryTag))
+          );
+
+          if (matchedPosts.length === 0) {
+            responseHtml = `
+              <div class="text-ctp-subtext0 space-y-0.5">
+                <div>search: no posts found for tag <span class="text-[var(--color-accent)]">${escapeHtml(queryTag)}</span></div>
+                ${allTags && allTags.length > 0 ? `<div class="text-[11px] text-ctp-subtext0/70">available tags: ${allTags.join(', ')}</div>` : ''}
+              </div>
+            `;
+            commandFailed = true;
+            break;
+          }
+
+          responseHtml = `
+            <div class="space-y-2 text-ctp-subtext0">
+              <div class="text-[11px] text-ctp-subtext0/80">found ${matchedPosts.length} post(s) for <span class="text-[var(--color-accent)]">${escapeHtml(queryTag)}</span>:</div>
+              <div class="space-y-1.5">
+                ${matchedPosts
+                  .map(
+                    (p) => `
+                  <div class="space-y-0.5">
+                    <div class="flex items-baseline justify-between gap-2">
+                      <a href="/blog/${p.slug}" class="text-ctp-text font-medium hover:text-[var(--color-accent)] underline">
+                        ${p.title}
+                      </a>
+                      <span class="text-[11px] text-ctp-subtext0/60 shrink-0">${p.created}</span>
+                    </div>
+                    ${p.description ? `<div class="text-ctp-subtext0 text-[11px]">${p.description}</div>` : ''}
+                    <div class="flex flex-wrap gap-1.5 text-[10px] pt-0.5">
+                      ${p.tags
+                        .map(
+                          (t) => `
+                        <span class="${t.toLowerCase() === queryTag ? 'text-[var(--color-accent)] font-semibold' : 'text-ctp-subtext0/60'}">${t}</span>
+                      `
+                        )
+                        .join('')}
+                    </div>
+                  </div>
+                `
+                  )
+                  .join('')}
+              </div>
+            </div>
+          `;
           break;
 
         case 'team':

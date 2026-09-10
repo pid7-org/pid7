@@ -33,7 +33,7 @@ export function parseFrontmatter(markdown: string): { frontmatter: BlogFrontmatt
   }
 
   const tags = fields['tags']
-    ? fields['tags'].split(',').map((t) => t.trim().replace(/-/g, ' ')).filter(Boolean)
+    ? fields['tags'].split(',').map((t) => t.trim()).filter(Boolean)
     : [];
 
   const rawSlug = fields['slug'] || fields['id'] || 'untitled';
