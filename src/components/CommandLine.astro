@@ -12,8 +12,29 @@ const blogPosts = rawPosts.map((p) => ({
 }));
 
 const allTags = Array.from(
-  new Set(blogPosts.flatMap((p) => (p.tags || []).map((t: string) => t.toLowerCase())))
+  new Set(blogPosts.flatMap((p) => (p.tags || []).map((t: string) => t.trim().toLowerCase().replace(/\s+/g, '-'))))
 ).sort();
+
+const glossaryMap = new Map<string, { term: string; searchTerm: string; definition: string }>();
+for (const post of rawPosts) {
+  if (post.glossary) {
+    for (const item of post.glossary) {
+      const searchTerm = item.term.trim().replace(/\s+/g, '-');
+      const key = searchTerm.toLowerCase();
+      if (!glossaryMap.has(key)) {
+        glossaryMap.set(key, {
+          term: item.term.trim(),
+          searchTerm,
+          definition: item.definitionHtml,
+        });
+      }
+    }
+  }
+}
+
+const allGlossary = Array.from(glossaryMap.values()).sort((a, b) =>
+  a.searchTerm.localeCompare(b.searchTerm)
+);
 ---
 
 <div
@@ -112,7 +133,7 @@ const allTags = Array.from(
   }
 </style>
 
-<script is:inline define:vars={{ blogPosts, projects, team, allTags }}>
+<script is:inline define:vars={{ blogPosts, projects, team, allTags, allGlossary }}>
   (function () {
     const dock = document.getElementById('cli-dock');
     const shell = document.getElementById('cli-shell');
@@ -159,7 +180,7 @@ const allTags = Array.from(
 
     function getTargetHeight() {
       const maxAllowed = Math.floor(window.innerHeight * 0.85);
-      return Math.min(380, maxAllowed);
+      return Math.min(520, maxAllowed);
     }
 
     function getPromptString() {
@@ -218,6 +239,12 @@ const allTags = Array.from(
 
     dock?.addEventListener('click', openTerminal);
     closeBtn?.addEventListener('click', closeTerminal);
+
+    window.addEventListener('resize', () => {
+      if (isOpen && shell) {
+        shell.style.height = `${getTargetHeight()}px`;
+      }
+    });
 
     window.addEventListener('keydown', (e) => {
       const activeEl = document.activeElement;
@@ -295,6 +322,7 @@ const allTags = Array.from(
       'projects',
       'posts',
       'search',
+      'glossary',
       'team',
       'theme',
       'accent',
@@ -457,6 +485,21 @@ const allTags = Array.from(
           input.value = `search ${matches[tabMatchIndex]}`;
           input.setSelectionRange(input.value.length, input.value.length);
         }
+      } else if (parts.length >= 1 && parts[0] === 'glossary') {
+        const prefix = (parts.length >= 2 && !endsWithSpace) ? parts.slice(1).join(' ').toLowerCase().replace(/\s+/g, '-') : '';
+        const matches = prefix
+          ? allGlossary.filter((g) => g.searchTerm.toLowerCase().startsWith(prefix) || g.searchTerm.toLowerCase().includes(prefix))
+          : allGlossary;
+        if (matches.length > 0) {
+          if (lastTabPrefix === prefix) {
+            tabMatchIndex = (tabMatchIndex + 1) % matches.length;
+          } else {
+            lastTabPrefix = prefix;
+            tabMatchIndex = 0;
+          }
+          input.value = `glossary ${matches[tabMatchIndex].searchTerm}`;
+          input.setSelectionRange(input.value.length, input.value.length);
+        }
       }
     }
 
@@ -499,6 +542,7 @@ const allTags = Array.from(
                 <span class="text-[var(--color-accent)]">projects</span><span>list core software repositories</span>
                 <span class="text-[var(--color-accent)]">posts</span><span>list published blog articles</span>
                 <span class="text-[var(--color-accent)]">search &lt;tag&gt;</span><span>search blog posts by tag</span>
+                <span class="text-[var(--color-accent)]">glossary &lt;term&gt;</span><span>lookup technical definition</span>
                 <span class="text-[var(--color-accent)]">team</span><span>list team members</span>
                 <span class="text-[var(--color-accent)]">theme &lt;opt&gt;</span><span>set theme: macchiato, latte</span>
                 <span class="text-[var(--color-accent)]">accent &lt;opt&gt;</span><span>set accent: peach, mauve, blue...</span>
@@ -825,6 +869,54 @@ const allTags = Array.from(
                   )
                   .join('')}
               </div>
+            </div>
+          `;
+          break;
+
+        case 'glossary':
+          const queryTerm = fullArgs ? fullArgs.trim().toLowerCase().replace(/\s+/g, '-') : '';
+          if (!queryTerm) {
+            responseHtml = `
+              <div class="text-ctp-subtext0 space-y-1">
+                <div>usage: <span class="text-ctp-text">glossary &lt;term&gt;</span></div>
+                ${allGlossary && allGlossary.length > 0 ? `<div class="text-[11px]">available terms: ${allGlossary.map((g) => `<span class="text-[var(--color-accent)]">${g.searchTerm}</span>`).join(', ')}</div>` : '<div>no glossary items found.</div>'}
+              </div>
+            `;
+            if (args.length > 0) commandFailed = true;
+            break;
+          }
+
+          const matchedTerms = allGlossary.filter(
+            (g) =>
+              g.searchTerm.toLowerCase() === queryTerm ||
+              g.searchTerm.toLowerCase().includes(queryTerm) ||
+              g.term.toLowerCase() === queryTerm ||
+              g.term.toLowerCase().includes(queryTerm)
+          );
+
+          if (matchedTerms.length === 0) {
+            responseHtml = `
+              <div class="text-ctp-subtext0 space-y-0.5">
+                <div>glossary: no definition found for '${escapeHtml(queryTerm)}'</div>
+                ${allGlossary && allGlossary.length > 0 ? `<div class="text-[11px] text-ctp-subtext0/70">available terms: ${allGlossary.map((g) => g.searchTerm).join(', ')}</div>` : ''}
+              </div>
+            `;
+            commandFailed = true;
+            break;
+          }
+
+          responseHtml = `
+            <div class="space-y-2 text-ctp-subtext0">
+              ${matchedTerms
+                .map(
+                  (item) => `
+                <div class="space-y-0.5">
+                  <div class="text-[var(--color-accent)] font-semibold text-xs">${item.searchTerm.toLowerCase() !== item.term.toLowerCase() ? `${item.term} (${item.searchTerm})` : item.term}</div>
+                  <div class="text-[11px] leading-relaxed select-text">${item.definition}</div>
+                </div>
+              `
+                )
+                .join('')}
             </div>
           `;
           break;
