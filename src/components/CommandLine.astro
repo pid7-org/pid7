@@ -53,9 +53,9 @@ const blogPosts = rawPosts.map((p) => ({
 
     <span class="text-ctp-surface1 hidden sm:inline">•</span>
 
-    <button type="button" class="kb-dock-btn flex items-center gap-1 hover:brightness-110 transition-all cursor-pointer" data-kb-action="terminal" title="Toggle terminal (t)">
+    <button type="button" class="kb-dock-btn flex items-center gap-1 hover:text-ctp-text transition-colors cursor-pointer" data-kb-action="terminal" title="Toggle terminal (t)">
       <kbd class="kb-badge kb-badge-accent" data-kb="t">t</kbd>
-      <span class="text-[var(--color-accent)] font-semibold text-[10px]">terminal</span>
+      <span class="text-ctp-subtext0/70 text-[10px]">terminal</span>
     </button>
 
     <span class="text-ctp-surface1">•</span>
@@ -73,7 +73,18 @@ const blogPosts = rawPosts.map((p) => ({
   class="fixed left-0 right-0 bottom-0 z-50 bg-ctp-crust/98 backdrop-blur-md border-t border-ctp-surface0/70 overflow-hidden shadow-2xl font-mono flex flex-col transition-[height] duration-200 ease-out"
   style="height: 0px;"
 >
-  <div class="flex-1 max-w-screen-md w-full mx-auto flex flex-col min-h-0 px-4 sm:px-6">
+  <button
+    id="cli-close-btn"
+    type="button"
+    class="kb-dock-btn absolute top-2.5 right-4 sm:right-6 z-20 flex items-center gap-1 text-ctp-subtext0 text-[11px] font-mono select-none hover:text-ctp-text transition-colors cursor-pointer"
+    data-kb-action="close"
+    title="Close terminal (Esc)"
+  >
+    <kbd class="kb-badge" data-kb="Escape">esc</kbd>
+    <span class="text-ctp-subtext0/60 text-[10px]">close</span>
+  </button>
+
+  <div class="flex-1 max-w-screen-md w-full mx-auto flex flex-col min-h-0 px-4 sm:px-6 relative">
     <div
       id="cli-terminal-body"
       class="flex-1 overflow-y-auto overscroll-contain py-4 text-xs leading-relaxed space-y-2.5 select-text min-h-0"
@@ -89,7 +100,8 @@ const blogPosts = rawPosts.map((p) => ({
           autocorrect="off"
           autocapitalize="off"
           spellcheck="false"
-          class="flex-1 bg-transparent border-none outline-none font-mono text-xs text-ctp-text caret-[var(--color-accent)] p-0 m-0"
+          placeholder="type 'help' to know more"
+          class="flex-1 bg-transparent border-none outline-none font-mono text-xs text-ctp-text caret-[var(--color-accent)] placeholder:text-ctp-subtext0/40 p-0 m-0"
         />
       </div>
     </div>
@@ -111,20 +123,13 @@ const blogPosts = rawPosts.map((p) => ({
 
 <script is:inline define:vars={{ blogPosts, projects, team }}>
   (function () {
-    const TERMINAL_HEIGHT = 470;
-
-    let isOpen = false;
-    let currentDir = '~';
-
-    const commandHistory = [];
-    let historyIndex = -1;
-
     const dock = document.getElementById('cli-dock');
     const shell = document.getElementById('cli-shell');
     const input = document.getElementById('cli-input');
     const output = document.getElementById('cli-output');
     const terminalBody = document.getElementById('cli-terminal-body');
     const promptLabel = document.getElementById('cli-prompt-label');
+    const closeBtn = document.getElementById('cli-close-btn');
 
     const accents = ['peach', 'mono', 'yellow', 'mauve', 'blue', 'green'];
 
@@ -161,7 +166,10 @@ const blogPosts = rawPosts.map((p) => ({
     let historyIndex = -1;
     let tempInput = '';
 
-    const terminalHeight = 320;
+    function getTargetHeight() {
+      const maxAllowed = Math.floor(window.innerHeight * 0.85);
+      return Math.min(380, maxAllowed);
+    }
 
     function getPromptString() {
       return currentDir === '~' ? '~/pid7 ❯' : `~/pid7/${currentDir.replace('~/', '')} ❯`;
@@ -179,7 +187,7 @@ const blogPosts = rawPosts.map((p) => ({
     function openTerminal() {
       if (!shell) return;
       isOpen = true;
-      shell.style.height = `${terminalHeight}px`;
+      shell.style.height = `${getTargetHeight()}px`;
       dock?.classList.add('opacity-0', 'pointer-events-none');
       setTimeout(() => {
         input?.focus();
@@ -192,6 +200,7 @@ const blogPosts = rawPosts.map((p) => ({
       isOpen = false;
       shell.style.height = '0px';
       dock?.classList.remove('opacity-0', 'pointer-events-none');
+      input?.blur();
     }
 
     function scrollToBottom() {
@@ -217,6 +226,7 @@ const blogPosts = rawPosts.map((p) => ({
     });
 
     dock?.addEventListener('click', openTerminal);
+    closeBtn?.addEventListener('click', closeTerminal);
 
     window.addEventListener('keydown', (e) => {
       const activeEl = document.activeElement;
@@ -241,16 +251,6 @@ const blogPosts = rawPosts.map((p) => ({
 
       if (isInputActive && activeEl !== input) {
         return;
-      }
-
-      if (!isOpen) {
-        if (e.key === 't' || e.key === 'T') {
-          e.preventDefault();
-          openTerminal();
-          if (input) {
-            input.focus();
-          }
-        }
       }
     });
 
@@ -349,19 +349,43 @@ const blogPosts = rawPosts.map((p) => ({
       return dp[m][n];
     }
 
+    let lastTabPrefix = null;
+    let tabMatchIndex = 0;
+
+    input?.addEventListener('input', () => {
+      lastTabPrefix = null;
+      tabMatchIndex = 0;
+    });
+
     function handleTabCompletion() {
       if (!input) return;
-      const text = input.value.trim();
-      if (!text) return;
+      const rawVal = input.value;
+      const trimmed = rawVal.trimStart();
+      if (!trimmed) return;
 
-      const parts = text.split(/\s+/);
-      if (parts.length === 1) {
+      const endsWithSpace = rawVal.endsWith(' ');
+      const parts = trimmed.split(/\s+/);
+
+      if (parts.length === 1 && !endsWithSpace) {
         const prefix = parts[0].toLowerCase();
-        const match = knownCommands.find((c) => c.startsWith(prefix));
-        if (match) {
-          input.value = match + ' ';
+        const matches = knownCommands.filter((c) => c.startsWith(prefix));
+        if (matches.length > 0) {
+          if (lastTabPrefix === prefix) {
+            tabMatchIndex = (tabMatchIndex + 1) % matches.length;
+          } else {
+            lastTabPrefix = prefix;
+            tabMatchIndex = 0;
+          }
+          input.value = matches[tabMatchIndex] + ' ';
+          input.setSelectionRange(input.value.length, input.value.length);
+          return;
         }
-      } else if (parts.length >= 2 && (parts[0] === 'cat' || parts[0] === 'cd')) {
+      }
+
+      lastTabPrefix = null;
+      tabMatchIndex = 0;
+
+      if (parts.length >= 2 && (parts[0] === 'cat' || parts[0] === 'cd')) {
         let candidates = filesMeta[currentDir] || filesMeta['~'];
         if (parts[0] === 'cd') {
           candidates = candidates.filter((f) => f.isDir && f.name !== '.');
@@ -369,22 +393,31 @@ const blogPosts = rawPosts.map((p) => ({
           candidates = candidates.filter((f) => !f.isDir);
         }
         const files = candidates.map((f) => f.name);
-        const prefix = parts[parts.length - 1].toLowerCase();
-        const match = files.find((f) => f.toLowerCase().startsWith(prefix));
-        if (match) {
-          parts[parts.length - 1] = match;
+        const prefix = endsWithSpace ? '' : parts[parts.length - 1].toLowerCase();
+        const matches = prefix ? files.filter((f) => f.toLowerCase().startsWith(prefix)) : files;
+        if (matches.length > 0) {
+          if (endsWithSpace) {
+            parts.push(matches[0]);
+          } else {
+            parts[parts.length - 1] = matches[0];
+          }
           input.value = parts.join(' ');
+          input.setSelectionRange(input.value.length, input.value.length);
         }
-      } else if (parts.length === 2 && parts[0] === 'theme') {
+      } else if (parts.length >= 1 && parts[0] === 'theme') {
         const themes = ['macchiato', 'latte'];
-        const match = themes.find((t) => t.startsWith(parts[1].toLowerCase()));
-        if (match) {
-          input.value = `theme ${match}`;
+        const prefix = (parts.length === 2 && !endsWithSpace) ? parts[1].toLowerCase() : '';
+        const matches = prefix ? themes.filter((t) => t.startsWith(prefix)) : themes;
+        if (matches.length > 0) {
+          input.value = `theme ${matches[0]}`;
+          input.setSelectionRange(input.value.length, input.value.length);
         }
-      } else if (parts.length === 2 && parts[0] === 'accent') {
-        const match = accents.find((a) => a.startsWith(parts[1].toLowerCase()));
-        if (match) {
-          input.value = `accent ${match}`;
+      } else if (parts.length >= 1 && parts[0] === 'accent') {
+        const prefix = (parts.length === 2 && !endsWithSpace) ? parts[1].toLowerCase() : '';
+        const matches = prefix ? accents.filter((a) => a.startsWith(prefix)) : accents;
+        if (matches.length > 0) {
+          input.value = `accent ${matches[0]}`;
+          input.setSelectionRange(input.value.length, input.value.length);
         }
       }
     }
