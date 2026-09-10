@@ -1,4 +1,4 @@
-name: Daily Org GitHub Activity & Languages Collector
+name: GH Activity
 
 on:
   schedule:
@@ -14,12 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: 'npm'
@@ -54,6 +54,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No data updates to commit."
           else
-            git commit -m "feat(data): update org github activity, languages & projects datasets [skip ci]"
+            git commit -m "(gh-actions) data: update org gh activity, langs & projects data [skip ci]"
             git push
           fi
