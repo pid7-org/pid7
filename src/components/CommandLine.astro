@@ -292,6 +292,7 @@ const blogPosts = rawPosts.map((p) => ({
       'team',
       'theme',
       'accent',
+      'eyeline',
       'history',
       'uptime',
       'id',
@@ -405,6 +406,38 @@ const blogPosts = rawPosts.map((p) => ({
           input.value = `accent ${matches[0]}`;
           input.setSelectionRange(input.value.length, input.value.length);
         }
+      } else if (parts.length >= 1 && parts[0] === 'eyeline') {
+        if (parts.length === 1 || (parts.length === 2 && !endsWithSpace)) {
+          const subcmds = ['on', 'off', 'toggle', 'opacity', 'pos', 'up', 'down', 'reset'];
+          const prefix = (parts.length === 2 && !endsWithSpace) ? parts[1].toLowerCase() : '';
+          const matches = prefix ? subcmds.filter((s) => s.startsWith(prefix)) : subcmds;
+          if (matches.length > 0) {
+            if (lastTabPrefix === prefix) {
+              tabMatchIndex = (tabMatchIndex + 1) % matches.length;
+            } else {
+              lastTabPrefix = prefix;
+              tabMatchIndex = 0;
+            }
+            input.value = `eyeline ${matches[tabMatchIndex]}`;
+            input.setSelectionRange(input.value.length, input.value.length);
+          }
+        } else if (parts[1] === 'opacity' && (parts.length === 2 || (parts.length === 3 && !endsWithSpace))) {
+          const opts = ['low', 'mid', 'high', 'max'];
+          const prefix = (parts.length === 3 && !endsWithSpace) ? parts[2].toLowerCase() : '';
+          const matches = prefix ? opts.filter((o) => o.startsWith(prefix)) : opts;
+          if (matches.length > 0) {
+            input.value = `eyeline opacity ${matches[0]}`;
+            input.setSelectionRange(input.value.length, input.value.length);
+          }
+        } else if ((parts[1] === 'pos' || parts[1] === 'position') && (parts.length === 2 || (parts.length === 3 && !endsWithSpace))) {
+          const opts = ['top', 'mid', 'bottom'];
+          const prefix = (parts.length === 3 && !endsWithSpace) ? parts[2].toLowerCase() : '';
+          const matches = prefix ? opts.filter((o) => o.startsWith(prefix)) : opts;
+          if (matches.length > 0) {
+            input.value = `eyeline pos ${matches[0]}`;
+            input.setSelectionRange(input.value.length, input.value.length);
+          }
+        }
       }
     }
 
@@ -449,6 +482,7 @@ const blogPosts = rawPosts.map((p) => ({
                 <span class="text-[var(--color-accent)]">team</span><span>list team members</span>
                 <span class="text-[var(--color-accent)]">theme &lt;opt&gt;</span><span>set theme: macchiato, latte</span>
                 <span class="text-[var(--color-accent)]">accent &lt;opt&gt;</span><span>set accent: peach, mauve, blue...</span>
+                <span class="text-[var(--color-accent)]">eyeline &lt;opt&gt;</span><span>reading guide: on, off, pos, opacity</span>
                 <span class="text-[var(--color-accent)]">whoami</span><span>print user identity</span>
                 <span class="text-[var(--color-accent)]">uname</span><span>system info card</span>
                 <span class="text-[var(--color-accent)]">history</span><span>command execution history</span>
@@ -817,6 +851,133 @@ const blogPosts = rawPosts.map((p) => ({
           }
 
           responseHtml = `<div>accent set to: <span class="text-[var(--color-accent)] font-semibold">${targetAccent}</span></div>`;
+          break;
+
+        case 'eyeline':
+          const eyelineApi = window.__eyeline;
+          if (!eyelineApi) {
+            responseHtml = `<div class="text-ctp-subtext0">eyeline: only available on blog post pages (/blog/&lt;slug&gt;)</div>`;
+            break;
+          }
+
+          const eyelineSub = args[0] ? args[0].toLowerCase() : '';
+          const eyelineVal = args[1] ? args[1].toLowerCase() : '';
+
+          if (!eyelineSub) {
+            const cur = eyelineApi.getConfig();
+            responseHtml = `
+              <div class="text-ctp-subtext0 space-y-1">
+                <div class="text-ctp-text font-medium">eyeline guide:</div>
+                <div class="grid grid-cols-[80px_1fr] gap-x-2 gap-y-0.5 text-[11px]">
+                  <span class="text-[var(--color-accent)]">state:</span><span>${cur.enabled ? 'enabled (on)' : 'disabled (off)'}</span>
+                  <span class="text-[var(--color-accent)]">opacity:</span><span>${cur.opacity}% (presets: low 15%, mid 35%, high 60%, max 85%)</span>
+                  <span class="text-[var(--color-accent)]">position:</span><span>${cur.pos}vh (range: 15vh - 55vh, presets: top 20vh, mid 28vh, bottom 45vh)</span>
+                </div>
+                <div class="text-[10px] text-ctp-subtext0/70 pt-0.5">usage: eyeline &lt;on|off|toggle|opacity|pos|up|down|reset&gt;</div>
+              </div>
+            `;
+            break;
+          }
+
+          if (eyelineSub === 'on' || eyelineSub === 'enable' || eyelineSub === 'show') {
+            eyelineApi.setConfig({ enabled: true });
+            responseHtml = `<div class="text-ctp-subtext0">eyeline: enabled</div>`;
+            break;
+          }
+
+          if (eyelineSub === 'off' || eyelineSub === 'disable' || eyelineSub === 'hide') {
+            eyelineApi.setConfig({ enabled: false });
+            responseHtml = `<div class="text-ctp-subtext0">eyeline: disabled</div>`;
+            break;
+          }
+
+          if (eyelineSub === 'toggle') {
+            const cur = eyelineApi.getConfig();
+            const nextState = !cur.enabled;
+            eyelineApi.setConfig({ enabled: nextState });
+            responseHtml = `<div class="text-ctp-subtext0">eyeline: ${nextState ? 'enabled' : 'disabled'}</div>`;
+            break;
+          }
+
+          if (eyelineSub === 'opacity') {
+            if (!eyelineVal) {
+              const cur = eyelineApi.getConfig();
+              responseHtml = `<div class="text-ctp-subtext0">eyeline: current opacity is ${cur.opacity}%. Options: low (15%), mid (35%), high (60%), max (85%), or 10..90</div>`;
+              break;
+            }
+            let targetOpacity = null;
+            if (eyelineVal === 'low') targetOpacity = 15;
+            else if (eyelineVal === 'mid' || eyelineVal === 'medium') targetOpacity = 35;
+            else if (eyelineVal === 'high') targetOpacity = 60;
+            else if (eyelineVal === 'max') targetOpacity = 85;
+            else {
+              const parsed = parseInt(eyelineVal.replace('%', ''), 10);
+              if (!isNaN(parsed) && parsed >= 10 && parsed <= 90) {
+                targetOpacity = parsed;
+              }
+            }
+
+            if (targetOpacity === null) {
+              responseHtml = `<div class="text-ctp-subtext0">eyeline: invalid opacity '${escapeHtml(eyelineVal)}'. Must be between 10% and 90% (or: low, mid, high, max)</div>`;
+              commandFailed = true;
+            } else {
+              eyelineApi.setConfig({ opacity: targetOpacity, enabled: true });
+              responseHtml = `<div class="text-ctp-subtext0">eyeline: opacity set to ${targetOpacity}%</div>`;
+            }
+            break;
+          }
+
+          if (eyelineSub === 'pos' || eyelineSub === 'position' || eyelineSub === 'top') {
+            if (!eyelineVal) {
+              const cur = eyelineApi.getConfig();
+              responseHtml = `<div class="text-ctp-subtext0">eyeline: current position is ${cur.pos}vh. Range: 15..55 (or: top, mid, bottom)</div>`;
+              break;
+            }
+            let targetPos = null;
+            if (eyelineVal === 'top') targetPos = 20;
+            else if (eyelineVal === 'mid' || eyelineVal === 'center') targetPos = 28;
+            else if (eyelineVal === 'bottom') targetPos = 45;
+            else {
+              const parsed = parseInt(eyelineVal.replace(/vh|%/, ''), 10);
+              if (!isNaN(parsed) && parsed >= 15 && parsed <= 55) {
+                targetPos = parsed;
+              }
+            }
+
+            if (targetPos === null) {
+              responseHtml = `<div class="text-ctp-subtext0">eyeline: invalid position '${escapeHtml(eyelineVal)}'. Must be between 15% and 55% (or: top, mid, bottom)</div>`;
+              commandFailed = true;
+            } else {
+              eyelineApi.setConfig({ pos: targetPos, enabled: true });
+              responseHtml = `<div class="text-ctp-subtext0">eyeline: position set to ${targetPos}vh</div>`;
+            }
+            break;
+          }
+
+          if (eyelineSub === 'up') {
+            const cur = eyelineApi.getConfig();
+            const newPos = Math.max(15, cur.pos - 4);
+            eyelineApi.setConfig({ pos: newPos, enabled: true });
+            responseHtml = `<div class="text-ctp-subtext0">eyeline: moved up to ${newPos}vh</div>`;
+            break;
+          }
+
+          if (eyelineSub === 'down') {
+            const cur = eyelineApi.getConfig();
+            const newPos = Math.min(55, cur.pos + 4);
+            eyelineApi.setConfig({ pos: newPos, enabled: true });
+            responseHtml = `<div class="text-ctp-subtext0">eyeline: moved down to ${newPos}vh</div>`;
+            break;
+          }
+
+          if (eyelineSub === 'reset') {
+            eyelineApi.setConfig({ enabled: true, opacity: 35, pos: 28 });
+            responseHtml = `<div class="text-ctp-subtext0">eyeline: reset to defaults (enabled, 35% opacity, 28vh)</div>`;
+            break;
+          }
+
+          responseHtml = `<div class="text-ctp-subtext0">eyeline: unknown option '${escapeHtml(eyelineSub)}'. Use: on, off, toggle, opacity &lt;val&gt;, pos &lt;val&gt;, up, down, reset</div>`;
+          commandFailed = true;
           break;
 
         case 'clear':
